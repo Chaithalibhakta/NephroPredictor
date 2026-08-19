@@ -1,24 +1,30 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-import joblib
 import pandas as pd
+import joblib
 
 app = FastAPI(title="NephroPredictor API")
 
-# -----------------------------
-# Load Model & Scaler
-# -----------------------------
+# ======================================================
+# Load Models
+# ======================================================
+
 model = joblib.load("../models/best_ckd_model.pkl")
 scaler = joblib.load("../models/scaler.pkl")
+stage_model = joblib.load("../models/stage_model.pkl")
 
-# -----------------------------
-# Temporary Patient History
-# -----------------------------
 patient_history = []
 
-# -----------------------------
-# Patient Input Model
-# -----------------------------
+print("=" * 50)
+print("CKD Model Loaded")
+print(type(model))
+print(model.classes_)
+print("=" * 50)
+
+# ======================================================
+# Input Model
+# ======================================================
+
 class PatientData(BaseModel):
     serum_creatinine: float
     gfr: float
@@ -42,9 +48,10 @@ class PatientData(BaseModel):
     months: int
 
 
-# -----------------------------
-# Home API
-# -----------------------------
+# ======================================================
+# Home
+# ======================================================
+
 @app.get("/")
 def home():
     return {
@@ -53,97 +60,169 @@ def home():
     }
 
 
-# -----------------------------
-# Prediction API
-# -----------------------------
+# ======================================================
+# Prediction
+# ======================================================
+
 @app.post("/predict")
 def predict(data: PatientData):
+
     try:
 
-        # Create DataFrame
-        df = pd.DataFrame([{
-            "serum_creatinine": data.serum_creatinine,
-            "gfr": data.gfr,
-            "bun": data.bun,
-            "serum_calcium": data.serum_calcium,
-            "ana": data.ana,
-            "c3_c4": data.c3_c4,
-            "hematuria": data.hematuria,
-            "oxalate_levels": data.oxalate_levels,
-            "urine_ph": data.urine_ph,
-            "blood_pressure": data.blood_pressure,
-            "physical_activity": data.physical_activity,
-            "diet": data.diet,
-            "water_intake": data.water_intake,
-            "smoking": data.smoking,
-            "alcohol": data.alcohol,
-            "painkiller_usage": data.painkiller_usage,
-            "family_history": data.family_history,
-            "weight_changes": data.weight_changes,
-            "stress_level": data.stress_level,
-            "months": data.months
-        }])
+        df = pd.DataFrame([[
+            data.serum_creatinine,
+            data.gfr,
+            data.bun,
+            data.serum_calcium,
+            data.oxalate_levels,
+            data.urine_ph,
+            data.blood_pressure,
+            data.ana,
+            data.c3_c4,
+            data.hematuria,
+            data.smoking,
+            data.alcohol,
+            data.painkiller_usage,
+            data.family_history,
+            data.physical_activity,
+            data.diet,
+            data.water_intake,
+            data.weight_changes,
+            data.stress_level,
+            data.months
+        ]],
+        columns=[
+            "serum_creatinine",
+            "gfr",
+            "bun",
+            "serum_calcium",
+            "oxalate_levels",
+            "urine_ph",
+            "blood_pressure",
+            "ana",
+            "c3_c4",
+            "hematuria",
+            "smoking",
+            "alcohol",
+            "painkiller_usage",
+            "family_history",
+            "physical_activity",
+            "diet",
+            "water_intake",
+            "weight_changes",
+            "stress_level",
+            "months"
+        ])
 
-        # Scale Data
+        print("\n================ INPUT ================")
+        print(df)
+
         scaled = scaler.transform(df)
 
-        # Prediction
-        prediction = model.predict(scaled)[0]
+        prediction = int(model.predict(scaled)[0])
 
-        # Confidence
-        probability = model.predict_proba(scaled)[0]
-        confidence = round(float(max(probability)) * 100, 2)
+        probabilities = model.predict_proba(scaled)[0]
 
-        # Result
-        result = "CKD Detected" if prediction == 1 else "No CKD"
+        print("Prediction :", prediction)
+        print("Probability :", probabilities)
 
-        # Risk Level
-        if confidence >= 90:
-            risk = "High"
-        elif confidence >= 70:
-            risk = "Moderate"
+        # 0 = CKD
+        # 1 = Healthy
+
+        if prediction == 0:
+
+            result = "CKD Detected"
+
+            stage = int(stage_model.predict(df)[0])
+            stage_names = {
+                            1: "Stage 1 (Mild Kidney Damage)",
+                            2: "Stage 2 (Mild Loss of Kidney Function)",
+                            3: "Stage 3 (Moderate CKD)",
+                            4: "Stage 4 (Severe CKD)",
+                            5: "Stage 5 (Kidney Failure)"
+                        }
+
+            confidence = round(float(probabilities[0]) * 100, 2)
+
+            if stage == 1:
+                risk = "Low"
+
+            elif stage == 2:
+                risk = "Moderate"
+
+            elif stage == 3:
+                risk = "Moderate"
+
+            elif stage == 4:
+                risk = "High"
+
+            elif stage == 5:
+                risk = "Critical"
+
+            else:
+                risk = "Unknown"
+
         else:
+
+            result = "Healthy"
+
+            stage = None
+
+            confidence = round(float(probabilities[1]) * 100, 2)
+
             risk = "Low"
 
-        # Save History
         patient_history.append({
-            "serum_creatinine": data.serum_creatinine,
-            "gfr": data.gfr,
             "prediction": result,
+            "stage": stage,
             "confidence": confidence,
             "risk_level": risk
         })
 
+        print("\n================ OUTPUT ================")
+        print(result)
+        print(stage)
+        print(confidence)
+        print(risk)
+
         return {
-            "prediction": result,
-            "confidence": confidence,
-            "risk_level": risk
-        }
+                "prediction": result,
+                "stage": stage_names.get(stage) if stage is not None else None,
+                "confidence": confidence,
+                "risk_level": risk
+            }
 
     except Exception as e:
+
+        print(e)
+
         return {
             "status": "Error",
             "message": str(e)
         }
+        # ======================================================
+# Prediction History
+# ======================================================
 
-
-# -----------------------------
-# Patient History API
-# -----------------------------
 @app.get("/history")
 def history():
+
     return {
         "total_predictions": len(patient_history),
         "history": patient_history
     }
 
 
-# -----------------------------
-# Health Check API
-# -----------------------------
+# ======================================================
+# Health Check
+# ======================================================
+
 @app.get("/health")
 def health():
+
     return {
         "status": "Healthy",
-        "model_loaded": True
+        "model_loaded": True,
+        "ckd_model": "Loaded",
+        "stage_model": "Loaded"
     }

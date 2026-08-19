@@ -8,7 +8,7 @@ from sklearn.metrics import classification_report, accuracy_score
 df = pd.read_csv("../dataset/clinical/processed_ckd_dataset.csv")
 
 # Features and target
-X = df.drop(["ckd_pred", "ckd_stage", "cluster"], axis=1)
+X = df.drop(["ckd_pred", "ckd_stage"], axis=1)
 y = df["ckd_pred"]
 
 # Train-Test Split

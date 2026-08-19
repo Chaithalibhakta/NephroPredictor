@@ -8,8 +8,8 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 # Load processed dataset
 df = pd.read_csv("../dataset/clinical/processed_ckd_dataset.csv")
 
-# Features and target
-X = df.drop(["ckd_pred", "ckd_stage", "cluster"], axis=1)
+# Features and target3
+X = df.drop(["ckd_pred", "ckd_stage"], axis=1)
 y = df["ckd_pred"]
 
 # Train-test split

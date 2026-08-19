@@ -3,31 +3,31 @@ import joblib
 import shap
 import matplotlib.pyplot as plt
 
-# Load processed dataset
+# Load Dataset
 df = pd.read_csv("../dataset/clinical/processed_ckd_dataset.csv")
 
-# Features
 X = df.drop(["ckd_pred", "ckd_stage"], axis=1)
 
-# Load trained model
+# Load Model
 model = joblib.load("../models/best_ckd_model.pkl")
 
 print("Loaded Model:", type(model))
 
-# Use a sample of data (faster and avoids memory issues)
-X_sample = X.sample(min(100, len(X)), random_state=42)
+# Get Booster
+booster = model.get_booster()
 
-# Create SHAP Explainer
-explainer = shap.Explainer(model, X_sample)
+# Sample Data
+X_sample = X.sample(200, random_state=42)
 
-# Calculate SHAP values
-shap_values = explainer(X_sample)
+# SHAP Explainer
+explainer = shap.TreeExplainer(booster)
+
+shap_values = explainer.shap_values(X_sample)
 
 # Summary Plot
-plt.figure(figsize=(10, 6))
-shap.plots.beeswarm(shap_values, show=False)
+shap.summary_plot(shap_values, X_sample, show=False)
 
 plt.tight_layout()
-plt.savefig("../reports/shap_summary.png", dpi=300)
+plt.savefig("../results/shap_summary.png", dpi=300)
 
-print("SHAP Summary Plot generated successfully!")
+print("SHAP Summary Plot Generated Successfully!")

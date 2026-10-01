@@ -1,0 +1,14 @@
+feature,importance
+median_intensity,0.13211063
+kidney_perimeter,0.102498434
+max_intensity,0.10059162
+mean_intensity,0.0779066
+kidney_area,0.075490005
+std_intensity,0.075072795
+aspect_ratio,0.07459145
+roi_std,0.074443504
+circularity,0.07305183
+kidney_width,0.0725629
+roi_mean,0.072141714
+kidney_height,0.0695385
+min_intensity,0.0

@@ -4,3 +4,6 @@ __pycache__/
 dataset/clinical/*.csv
 
 models/*.pkl
+
+# U-Net trained models
+segmentation/models/*.pth

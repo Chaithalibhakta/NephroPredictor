@@ -1,0 +1,299 @@
+image_id,image_path,label_path,mask_path,image_exists,mask_exists,diagnosis,pathology_1,pathology_2,view,num_bounding_boxes,bounding_boxes,class_name
+1599,kidney_images\images\1599.jpg,kidney_images\labels\1599.txt,kidney_images\masks\1599.mat,True,True,0,0,0,0,0,[],healthy
+503,kidney_images\images\503.jpg,kidney_images\labels\503.txt,kidney_images\masks\503.mat,True,True,1,1,0,0,3,"[[417, 145, 37, 28, 4], [510, 111, 39, 34, 2], [463, 180, 66, 81, 7]]",pathological
+468,kidney_images\images\468.jpg,kidney_images\labels\468.txt,kidney_images\masks\468.mat,True,True,1,1,1,0,2,"[[303, 146, 104, 84, 2], [422, 148, 45, 33, 2]]",pathological
+1118,kidney_images\images\1118.jpg,kidney_images\labels\1118.txt,kidney_images\masks\1118.mat,True,True,1,1,1,0,0,[],pathological
+155,kidney_images\images\155.jpg,kidney_images\labels\155.txt,kidney_images\masks\155.mat,True,True,1,1,0,0,2,"[[430, 202, 32, 39, 2], [470, 210, 24, 48, 2]]",pathological
+852,kidney_images\images\852.jpg,kidney_images\labels\852.txt,kidney_images\masks\852.mat,True,True,1,1,0,0,2,"[[312, 96, 18, 21, 8], [333, 86, 39, 25, 9]]",pathological
+1335,kidney_images\images\1335.jpg,kidney_images\labels\1335.txt,kidney_images\masks\1335.mat,True,True,1,0,0,0,1,"[[509, 122, 21, 33, 5]]",pathological
+1031,kidney_images\images\1031.jpg,kidney_images\labels\1031.txt,kidney_images\masks\1031.mat,True,True,1,1,1,0,4,"[[281, 246, 39, 38, 2], [288, 183, 35, 25, 2], [320, 229, 53, 55, 2], [377, 157, 38, 36, 2]]",pathological
+1421,kidney_images\images\1421.jpg,kidney_images\labels\1421.txt,kidney_images\masks\1421.mat,True,True,1,1,0,0,0,[],pathological
+1058,kidney_images\images\1058.jpg,kidney_images\labels\1058.txt,kidney_images\masks\1058.mat,True,True,1,0,0,0,1,"[[361, 192, 33, 38, 2]]",pathological
+1794,kidney_images\images\1794.jpg,kidney_images\labels\1794.txt,kidney_images\masks\1794.mat,True,True,1,0,0,0,1,"[[334, 212, 80, 38, 7]]",pathological
+1245,kidney_images\images\1245.jpg,kidney_images\labels\1245.txt,kidney_images\masks\1245.mat,True,True,1,0,1,0,2,"[[468, 170, 47, 57, 2], [311, 199, 62, 57, 2]]",pathological
+1260,kidney_images\images\1260.jpg,kidney_images\labels\1260.txt,kidney_images\masks\1260.mat,True,True,1,0,0,0,1,"[[342, 171, 164, 145, 3]]",pathological
+1254,kidney_images\images\1254.jpg,kidney_images\labels\1254.txt,kidney_images\masks\1254.mat,True,True,1,0,0,0,1,"[[337, 138, 62, 63, 2]]",pathological
+340,kidney_images\images\340.jpg,kidney_images\labels\340.txt,kidney_images\masks\340.mat,True,True,1,0,0,0,4,"[[416, 166, 60, 64, 2], [340, 160, 51, 63, 2], [466, 149, 47, 59, 2], [308, 211, 47, 51, 2]]",pathological
+39,kidney_images\images\39.jpg,kidney_images\labels\39.txt,kidney_images\masks\39.mat,True,True,1,0,0,0,1,"[[236, 174, 195, 99, 7]]",pathological
+1478,kidney_images\images\1478.jpg,kidney_images\labels\1478.txt,kidney_images\masks\1478.mat,True,True,1,0,0,0,1,"[[283, 144, 175, 119, 7]]",pathological
+1084,kidney_images\images\1084.jpg,kidney_images\labels\1084.txt,kidney_images\masks\1084.mat,True,True,1,0,0,1,1,"[[333, 174, 77, 66, 7]]",pathological
+808,kidney_images\images\808.jpg,kidney_images\labels\808.txt,kidney_images\masks\808.mat,True,True,1,0,0,0,1,"[[457, 186, 70, 48, 2]]",pathological
+598,kidney_images\images\598.jpg,kidney_images\labels\598.txt,kidney_images\masks\598.mat,True,True,1,0,0,0,3,"[[417, 135, 52, 24, 9], [300, 164, 57, 38, 2], [380, 160, 63, 26, 2]]",pathological
+404,kidney_images\images\404.jpg,kidney_images\labels\404.txt,kidney_images\masks\404.mat,True,True,1,1,1,1,3,"[[389, 155, 57, 53, 7], [335, 123, 41, 34, 4], [369, 115, 35, 46, 4]]",pathological
+147,kidney_images\images\147.jpg,kidney_images\labels\147.txt,kidney_images\masks\147.mat,True,True,1,1,1,0,0,[],pathological
+296,kidney_images\images\296.jpg,kidney_images\labels\296.txt,kidney_images\masks\296.mat,True,True,0,0,0,0,0,[],healthy
+166,kidney_images\images\166.jpg,kidney_images\labels\166.txt,kidney_images\masks\166.mat,True,True,1,0,0,0,1,"[[292, 168, 161, 56, 7]]",pathological
+909,kidney_images\images\909.jpg,kidney_images\labels\909.txt,kidney_images\masks\909.mat,True,True,1,0,0,0,3,"[[417, 175, 58, 39, 2], [520, 131, 51, 47, 2], [351, 177, 52, 49, 2]]",pathological
+625,kidney_images\images\625.jpg,kidney_images\labels\625.txt,kidney_images\masks\625.mat,True,True,1,1,1,0,0,[],pathological
+1925,kidney_images\images\1925.jpg,kidney_images\labels\1925.txt,kidney_images\masks\1925.mat,True,True,0,0,0,0,0,[],healthy
+704,kidney_images\images\704.jpg,kidney_images\labels\704.txt,kidney_images\masks\704.mat,True,True,1,0,0,0,2,"[[284, 110, 117, 60, 7], [420, 125, 67, 61, 7]]",pathological
+70,kidney_images\images\70.jpg,kidney_images\labels\70.txt,kidney_images\masks\70.mat,True,True,1,0,0,0,1,"[[365, 126, 71, 48, 9]]",pathological
+1878,kidney_images\images\1878.jpg,kidney_images\labels\1878.txt,kidney_images\masks\1878.mat,True,True,1,0,0,0,3,"[[327, 134, 26, 40, 4], [400, 118, 36, 43, 4], [444, 112, 37, 41, 4]]",pathological
+1291,kidney_images\images\1291.jpg,kidney_images\labels\1291.txt,kidney_images\masks\1291.mat,True,True,1,1,0,0,7,"[[297, 199, 72, 54, 4], [315, 166, 55, 31, 4], [394, 161, 44, 34, 4], [457, 158, 29, 29, 4], [366, 174, 33, 44, 2], [336, 170, 25, 25, 2], [441, 155, 33, 33, 4]]",pathological
+1799,kidney_images\images\1799.jpg,kidney_images\labels\1799.txt,kidney_images\masks\1799.mat,True,True,0,0,0,0,0,[],healthy
+765,kidney_images\images\765.jpg,kidney_images\labels\765.txt,kidney_images\masks\765.mat,True,True,1,1,1,0,0,[],pathological
+572,kidney_images\images\572.jpg,kidney_images\labels\572.txt,kidney_images\masks\572.mat,True,True,1,0,0,0,1,"[[251, 111, 311, 261, 7]]",pathological
+1346,kidney_images\images\1346.jpg,kidney_images\labels\1346.txt,kidney_images\masks\1346.mat,True,True,1,0,0,0,1,"[[333, 211, 31, 43, 2]]",pathological
+1,kidney_images\images\1.jpg,kidney_images\labels\1.txt,kidney_images\masks\1.mat,True,True,1,0,0,0,1,"[[326, 196, 48, 32, 5]]",pathological
+510,kidney_images\images\510.jpg,kidney_images\labels\510.txt,kidney_images\masks\510.mat,True,True,1,0,0,0,2,"[[257, 194, 107, 84, 7], [270, 166, 201, 121, 7]]",pathological
+851,kidney_images\images\851.jpg,kidney_images\labels\851.txt,kidney_images\masks\851.mat,True,True,1,1,0,0,1,"[[230, 133, 101, 107, 2]]",pathological
+962,kidney_images\images\962.jpg,kidney_images\labels\962.txt,kidney_images\masks\962.mat,True,True,1,0,0,0,1,"[[357, 146, 131, 119, 2]]",pathological
+1204,kidney_images\images\1204.jpg,kidney_images\labels\1204.txt,kidney_images\masks\1204.mat,True,True,1,0,0,1,1,"[[383, 227, 91, 67, 7]]",pathological
+28,kidney_images\images\28.jpg,kidney_images\labels\28.txt,kidney_images\masks\28.mat,True,True,0,0,0,0,0,[],healthy
+6,kidney_images\images\6.jpg,kidney_images\labels\6.txt,kidney_images\masks\6.mat,True,True,1,0,0,0,1,"[[353, 190, 121, 78, 7]]",pathological
+626,kidney_images\images\626.jpg,kidney_images\labels\626.txt,kidney_images\masks\626.mat,True,True,1,1,0,0,1,"[[316, 174, 243, 173, 7]]",pathological
+1017,kidney_images\images\1017.jpg,kidney_images\labels\1017.txt,kidney_images\masks\1017.mat,True,True,1,0,1,0,3,"[[321, 227, 39, 30, 2], [356, 185, 38, 19, 2], [347, 197, 34, 27, 2]]",pathological
+564,kidney_images\images\564.jpg,kidney_images\labels\564.txt,kidney_images\masks\564.mat,True,True,1,0,1,0,2,"[[342, 83, 144, 108, 3], [323, 201, 60, 48, 3]]",pathological
+696,kidney_images\images\696.jpg,kidney_images\labels\696.txt,kidney_images\masks\696.mat,True,True,0,0,0,0,0,[],healthy
+1828,kidney_images\images\1828.jpg,kidney_images\labels\1828.txt,kidney_images\masks\1828.mat,True,True,1,0,0,0,1,"[[177, 225, 256, 105, 7]]",pathological
+1637,kidney_images\images\1637.jpg,kidney_images\labels\1637.txt,kidney_images\masks\1637.mat,True,True,1,0,1,0,0,[],pathological
+816,kidney_images\images\816.jpg,kidney_images\labels\816.txt,kidney_images\masks\816.mat,True,True,1,0,0,0,2,"[[400, 132, 97, 63, 7], [356, 174, 135, 72, 7]]",pathological
+86,kidney_images\images\86.jpg,kidney_images\labels\86.txt,kidney_images\masks\86.mat,True,True,1,1,1,0,2,"[[282, 143, 134, 68, 8], [337, 165, 36, 25, 2]]",pathological
+1779,kidney_images\images\1779.jpg,kidney_images\labels\1779.txt,kidney_images\masks\1779.mat,True,True,0,0,0,0,0,[],healthy
+1074,kidney_images\images\1074.jpg,kidney_images\labels\1074.txt,kidney_images\masks\1074.mat,True,True,1,0,0,0,1,"[[364, 165, 72, 59, 7]]",pathological
+823,kidney_images\images\823.jpg,kidney_images\labels\823.txt,kidney_images\masks\823.mat,True,True,0,0,0,0,0,[],healthy
+462,kidney_images\images\462.jpg,kidney_images\labels\462.txt,kidney_images\masks\462.mat,True,True,0,0,0,0,0,[],healthy
+1834,kidney_images\images\1834.jpg,kidney_images\labels\1834.txt,kidney_images\masks\1834.mat,True,True,0,0,0,0,0,[],healthy
+683,kidney_images\images\683.jpg,kidney_images\labels\683.txt,kidney_images\masks\683.mat,True,True,1,1,0,0,3,"[[335, 135, 63, 40, 2], [399, 99, 72, 62, 2], [301, 188, 61, 72, 7]]",pathological
+1480,kidney_images\images\1480.jpg,kidney_images\labels\1480.txt,kidney_images\masks\1480.mat,True,True,1,0,0,0,1,"[[298, 161, 151, 88, 7]]",pathological
+1200,kidney_images\images\1200.jpg,kidney_images\labels\1200.txt,kidney_images\masks\1200.mat,True,True,1,1,1,0,2,"[[414, 154, 54, 51, 2], [459, 173, 68, 78, 2]]",pathological
+1225,kidney_images\images\1225.jpg,kidney_images\labels\1225.txt,kidney_images\masks\1225.mat,True,True,1,1,1,0,2,"[[358, 190, 160, 138, 7], [219, 198, 113, 134, 2]]",pathological
+303,kidney_images\images\303.jpg,kidney_images\labels\303.txt,kidney_images\masks\303.mat,True,True,0,0,0,0,0,[],healthy
+119,kidney_images\images\119.jpg,kidney_images\labels\119.txt,kidney_images\masks\119.mat,True,True,1,0,1,0,0,[],pathological
+1595,kidney_images\images\1595.jpg,kidney_images\labels\1595.txt,kidney_images\masks\1595.mat,True,True,1,0,0,1,1,"[[385, 140, 34, 31, 2]]",pathological
+1117,kidney_images\images\1117.jpg,kidney_images\labels\1117.txt,kidney_images\masks\1117.mat,True,True,1,1,1,0,0,[],pathological
+1375,kidney_images\images\1375.jpg,kidney_images\labels\1375.txt,kidney_images\masks\1375.mat,True,True,0,0,0,0,0,[],healthy
+1141,kidney_images\images\1141.jpg,kidney_images\labels\1141.txt,kidney_images\masks\1141.mat,True,True,1,1,1,0,2,"[[353, 213, 35, 28, 4], [425, 180, 40, 35, 2]]",pathological
+105,kidney_images\images\105.jpg,kidney_images\labels\105.txt,kidney_images\masks\105.mat,True,True,1,0,0,0,1,"[[295, 174, 140, 56, 7]]",pathological
+58,kidney_images\images\58.jpg,kidney_images\labels\58.txt,kidney_images\masks\58.mat,True,True,1,0,0,0,1,"[[324, 238, 81, 57, 7]]",pathological
+1392,kidney_images\images\1392.jpg,kidney_images\labels\1392.txt,kidney_images\masks\1392.mat,True,True,1,0,1,0,9,"[[464, 162, 65, 84, 2], [375, 180, 62, 60, 2], [304, 176, 69, 58, 2], [455, 125, 28, 25, 2], [481, 104, 42, 31, 2], [386, 135, 52, 27, 2], [411, 150, 36, 32, 2], [351, 130, 27, 36, 2], [366, 160, 23, 28, 2]]",pathological
+1526,kidney_images\images\1526.jpg,kidney_images\labels\1526.txt,kidney_images\masks\1526.mat,True,True,1,1,1,0,0,[],pathological
+760,kidney_images\images\760.jpg,kidney_images\labels\760.txt,kidney_images\masks\760.mat,True,True,1,1,1,0,0,[],pathological
+1742,kidney_images\images\1742.jpg,kidney_images\labels\1742.txt,kidney_images\masks\1742.mat,True,True,1,0,0,0,3,"[[325, 119, 117, 105, 7], [422, 180, 88, 91, 7], [536, 160, 83, 127, 2]]",pathological
+1945,kidney_images\images\1945.jpg,kidney_images\labels\1945.txt,kidney_images\masks\1945.mat,True,True,1,0,0,0,1,"[[387, 188, 114, 136, 2]]",pathological
+167,kidney_images\images\167.jpg,kidney_images\labels\167.txt,kidney_images\masks\167.mat,True,True,1,0,0,0,1,"[[299, 174, 156, 80, 7]]",pathological
+853,kidney_images\images\853.jpg,kidney_images\labels\853.txt,kidney_images\masks\853.mat,True,True,1,1,0,0,1,"[[384, 131, 45, 78, 1]]",pathological
+775,kidney_images\images\775.jpg,kidney_images\labels\775.txt,kidney_images\masks\775.mat,True,True,1,0,0,0,1,"[[415, 215, 59, 38, 2]]",pathological
+870,kidney_images\images\870.jpg,kidney_images\labels\870.txt,kidney_images\masks\870.mat,True,True,1,0,0,0,2,"[[297, 135, 113, 89, 3], [301, 236, 76, 53, 3]]",pathological
+607,kidney_images\images\607.jpg,kidney_images\labels\607.txt,kidney_images\masks\607.mat,True,True,1,1,0,0,2,"[[400, 143, 22, 23, 8], [315, 177, 178, 97, 7]]",pathological
+1753,kidney_images\images\1753.jpg,kidney_images\labels\1753.txt,kidney_images\masks\1753.mat,True,True,1,0,0,0,1,"[[460, 151, 149, 158, 2]]",pathological
+631,kidney_images\images\631.jpg,kidney_images\labels\631.txt,kidney_images\masks\631.mat,True,True,1,1,0,0,1,"[[265, 99, 269, 192, 7]]",pathological
+1381,kidney_images\images\1381.jpg,kidney_images\labels\1381.txt,kidney_images\masks\1381.mat,True,True,0,0,0,0,0,[],healthy
+1643,kidney_images\images\1643.jpg,kidney_images\labels\1643.txt,kidney_images\masks\1643.mat,True,True,0,0,0,1,0,[],healthy
+623,kidney_images\images\623.jpg,kidney_images\labels\623.txt,kidney_images\masks\623.mat,True,True,1,1,1,0,2,"[[365, 95, 49, 29, 2], [244, 143, 90, 66, 2]]",pathological
+328,kidney_images\images\328.jpg,kidney_images\labels\328.txt,kidney_images\masks\328.mat,True,True,1,0,0,0,3,"[[455, 191, 17, 31, 4], [377, 178, 32, 41, 4], [353, 188, 23, 44, 4]]",pathological
+1549,kidney_images\images\1549.jpg,kidney_images\labels\1549.txt,kidney_images\masks\1549.mat,True,True,0,0,0,0,0,[],healthy
+864,kidney_images\images\864.jpg,kidney_images\labels\864.txt,kidney_images\masks\864.mat,True,True,1,0,0,0,1,"[[196, 151, 215, 154, 2]]",pathological
+513,kidney_images\images\513.jpg,kidney_images\labels\513.txt,kidney_images\masks\513.mat,True,True,1,1,1,0,2,"[[407, 136, 47, 52, 4], [360, 149, 46, 40, 4]]",pathological
+1255,kidney_images\images\1255.jpg,kidney_images\labels\1255.txt,kidney_images\masks\1255.mat,True,True,1,0,0,0,1,"[[484, 168, 61, 53, 2]]",pathological
+297,kidney_images\images\297.jpg,kidney_images\labels\297.txt,kidney_images\masks\297.mat,True,True,1,0,0,0,1,"[[320, 146, 23, 30, 2]]",pathological
+1489,kidney_images\images\1489.jpg,kidney_images\labels\1489.txt,kidney_images\masks\1489.mat,True,True,1,0,0,0,2,"[[482, 156, 148, 165, 2], [395, 214, 40, 37, 2]]",pathological
+977,kidney_images\images\977.jpg,kidney_images\labels\977.txt,kidney_images\masks\977.mat,True,True,1,1,1,0,2,"[[523, 226, 35, 38, 2], [426, 211, 43, 45, 2]]",pathological
+1198,kidney_images\images\1198.jpg,kidney_images\labels\1198.txt,kidney_images\masks\1198.mat,True,True,1,0,0,0,1,"[[389, 127, 94, 85, 3]]",pathological
+1064,kidney_images\images\1064.jpg,kidney_images\labels\1064.txt,kidney_images\masks\1064.mat,True,True,1,0,0,0,3,"[[413, 166, 33, 44, 4], [358, 172, 45, 36, 4], [316, 206, 28, 42, 4]]",pathological
+1728,kidney_images\images\1728.jpg,kidney_images\labels\1728.txt,kidney_images\masks\1728.mat,True,True,1,1,1,0,1,"[[451, 171, 58, 56, 2]]",pathological
+788,kidney_images\images\788.jpg,kidney_images\labels\788.txt,kidney_images\masks\788.mat,True,True,1,0,1,0,2,"[[357, 163, 57, 40, 2], [310, 172, 55, 43, 2]]",pathological
+1264,kidney_images\images\1264.jpg,kidney_images\labels\1264.txt,kidney_images\masks\1264.mat,True,True,1,0,0,0,5,"[[335, 190, 40, 18, 4], [345, 151, 40, 22, 4], [385, 137, 43, 36, 4], [427, 125, 37, 23, 4], [476, 125, 22, 31, 4]]",pathological
+1909,kidney_images\images\1909.jpg,kidney_images\labels\1909.txt,kidney_images\masks\1909.mat,True,True,0,0,0,1,0,[],healthy
+974,kidney_images\images\974.jpg,kidney_images\labels\974.txt,kidney_images\masks\974.mat,True,True,1,1,1,0,1,"[[463, 78, 98, 77, 2]]",pathological
+1908,kidney_images\images\1908.jpg,kidney_images\labels\1908.txt,kidney_images\masks\1908.mat,True,True,1,0,0,0,2,"[[400, 106, 100, 93, 2], [312, 187, 93, 58, 3]]",pathological
+245,kidney_images\images\245.jpg,kidney_images\labels\245.txt,kidney_images\masks\245.mat,True,True,1,0,0,0,4,"[[297, 209, 41, 49, 4], [324, 186, 51, 65, 4], [382, 170, 74, 44, 4], [158, 285, 125, 100, 2]]",pathological
+716,kidney_images\images\716.jpg,kidney_images\labels\716.txt,kidney_images\masks\716.mat,True,True,1,0,0,0,2,"[[378, 155, 58, 45, 7], [416, 167, 56, 48, 7]]",pathological
+1463,kidney_images\images\1463.jpg,kidney_images\labels\1463.txt,kidney_images\masks\1463.mat,True,True,1,1,0,0,2,"[[461, 166, 67, 49, 2], [325, 202, 101, 40, 8]]",pathological
+1700,kidney_images\images\1700.jpg,kidney_images\labels\1700.txt,kidney_images\masks\1700.mat,True,True,1,1,1,0,1,"[[511, 134, 45, 44, 2]]",pathological
+23,kidney_images\images\23.jpg,kidney_images\labels\23.txt,kidney_images\masks\23.mat,True,True,1,0,0,0,2,"[[305, 120, 147, 44, 7], [200, 151, 95, 78, 7]]",pathological
+1522,kidney_images\images\1522.jpg,kidney_images\labels\1522.txt,kidney_images\masks\1522.mat,True,True,1,1,1,0,1,"[[365, 188, 62, 60, 7]]",pathological
+1610,kidney_images\images\1610.jpg,kidney_images\labels\1610.txt,kidney_images\masks\1610.mat,True,True,0,0,0,0,0,[],healthy
+1352,kidney_images\images\1352.jpg,kidney_images\labels\1352.txt,kidney_images\masks\1352.mat,True,True,0,0,0,0,0,[],healthy
+114,kidney_images\images\114.jpg,kidney_images\labels\114.txt,kidney_images\masks\114.mat,True,True,1,0,0,0,1,"[[349, 249, 106, 33, 7]]",pathological
+797,kidney_images\images\797.jpg,kidney_images\labels\797.txt,kidney_images\masks\797.mat,True,True,1,0,0,0,3,"[[366, 185, 72, 50, 2], [374, 227, 83, 41, 7], [412, 194, 61, 42, 7]]",pathological
+1057,kidney_images\images\1057.jpg,kidney_images\labels\1057.txt,kidney_images\masks\1057.mat,True,True,0,0,0,0,0,[],healthy
+1715,kidney_images\images\1715.jpg,kidney_images\labels\1715.txt,kidney_images\masks\1715.mat,True,True,0,0,0,0,0,[],healthy
+766,kidney_images\images\766.jpg,kidney_images\labels\766.txt,kidney_images\masks\766.mat,True,True,1,1,1,0,0,[],pathological
+1544,kidney_images\images\1544.jpg,kidney_images\labels\1544.txt,kidney_images\masks\1544.mat,True,True,1,1,1,0,2,"[[315, 169, 54, 47, 2], [324, 130, 35, 28, 2]]",pathological
+1133,kidney_images\images\1133.jpg,kidney_images\labels\1133.txt,kidney_images\masks\1133.mat,True,True,0,0,0,0,0,[],healthy
+401,kidney_images\images\401.jpg,kidney_images\labels\401.txt,kidney_images\masks\401.mat,True,True,1,1,0,0,2,"[[368, 190, 96, 68, 7], [467, 146, 26, 21, 8]]",pathological
+770,kidney_images\images\770.jpg,kidney_images\labels\770.txt,kidney_images\masks\770.mat,True,True,1,1,1,0,2,"[[284, 168, 41, 57, 2], [418, 139, 44, 51, 2]]",pathological
+1985,kidney_images\images\1985.jpg,kidney_images\labels\1985.txt,kidney_images\masks\1985.mat,True,True,1,0,0,0,3,"[[295, 112, 55, 32, 9], [217, 116, 61, 25, 9], [363, 113, 43, 36, 9]]",pathological
+1516,kidney_images\images\1516.jpg,kidney_images\labels\1516.txt,kidney_images\masks\1516.mat,True,True,1,1,0,0,1,"[[459, 306, 83, 33, 7]]",pathological
+833,kidney_images\images\833.jpg,kidney_images\labels\833.txt,kidney_images\masks\833.mat,True,True,1,1,1,0,1,"[[378, 218, 27, 23, 8]]",pathological
+1086,kidney_images\images\1086.jpg,kidney_images\labels\1086.txt,kidney_images\masks\1086.mat,True,True,0,0,0,0,0,[],healthy
+1364,kidney_images\images\1364.jpg,kidney_images\labels\1364.txt,kidney_images\masks\1364.mat,True,True,1,0,0,0,1,"[[451, 190, 33, 31, 2]]",pathological
+1022,kidney_images\images\1022.jpg,kidney_images\labels\1022.txt,kidney_images\masks\1022.mat,True,True,1,0,0,0,1,"[[321, 142, 169, 142, 6]]",pathological
+1269,kidney_images\images\1269.jpg,kidney_images\labels\1269.txt,kidney_images\masks\1269.mat,True,True,1,1,1,0,2,"[[325, 245, 25, 23, 2], [307, 288, 66, 52, 8]]",pathological
+1461,kidney_images\images\1461.jpg,kidney_images\labels\1461.txt,kidney_images\masks\1461.mat,True,True,0,0,0,0,0,[],healthy
+439,kidney_images\images\439.jpg,kidney_images\labels\439.txt,kidney_images\masks\439.mat,True,True,1,0,1,0,2,"[[354, 120, 76, 40, 7], [475, 84, 41, 30, 7]]",pathological
+855,kidney_images\images\855.jpg,kidney_images\labels\855.txt,kidney_images\masks\855.mat,True,True,1,1,1,0,2,"[[461, 139, 42, 46, 2], [386, 166, 37, 27, 4]]",pathological
+94,kidney_images\images\94.jpg,kidney_images\labels\94.txt,kidney_images\masks\94.mat,True,True,0,0,0,1,0,[],healthy
+1367,kidney_images\images\1367.jpg,kidney_images\labels\1367.txt,kidney_images\masks\1367.mat,True,True,1,0,0,0,1,"[[308, 257, 30, 22, 2]]",pathological
+1650,kidney_images\images\1650.jpg,kidney_images\labels\1650.txt,kidney_images\masks\1650.mat,True,True,1,0,0,0,2,"[[334, 154, 76, 71, 7], [422, 134, 130, 114, 7]]",pathological
+813,kidney_images\images\813.jpg,kidney_images\labels\813.txt,kidney_images\masks\813.mat,True,True,1,0,0,0,2,"[[398, 95, 41, 40, 8], [358, 137, 70, 69, 2]]",pathological
+80,kidney_images\images\80.jpg,kidney_images\labels\80.txt,kidney_images\masks\80.mat,True,True,1,0,0,0,1,"[[412, 146, 19, 22, 2]]",pathological
+1863,kidney_images\images\1863.jpg,kidney_images\labels\1863.txt,kidney_images\masks\1863.mat,True,True,0,0,0,0,0,[],healthy
+1790,kidney_images\images\1790.jpg,kidney_images\labels\1790.txt,kidney_images\masks\1790.mat,True,True,0,0,0,0,0,[],healthy
+764,kidney_images\images\764.jpg,kidney_images\labels\764.txt,kidney_images\masks\764.mat,True,True,1,1,1,0,0,[],pathological
+827,kidney_images\images\827.jpg,kidney_images\labels\827.txt,kidney_images\masks\827.mat,True,True,1,1,0,0,2,"[[302, 149, 63, 46, 2], [367, 132, 89, 78, 2]]",pathological
+1609,kidney_images\images\1609.jpg,kidney_images\labels\1609.txt,kidney_images\masks\1609.mat,True,True,1,0,0,0,2,"[[453, 165, 31, 21, 2], [480, 150, 34, 37, 2]]",pathological
+620,kidney_images\images\620.jpg,kidney_images\labels\620.txt,kidney_images\masks\620.mat,True,True,1,1,1,0,3,"[[363, 111, 77, 47, 4], [270, 119, 61, 48, 4], [445, 103, 52, 60, 4]]",pathological
+1416,kidney_images\images\1416.jpg,kidney_images\labels\1416.txt,kidney_images\masks\1416.mat,True,True,0,0,0,0,0,[],healthy
+1386,kidney_images\images\1386.jpg,kidney_images\labels\1386.txt,kidney_images\masks\1386.mat,True,True,0,0,0,0,0,[],healthy
+1420,kidney_images\images\1420.jpg,kidney_images\labels\1420.txt,kidney_images\masks\1420.mat,True,True,1,0,0,0,1,"[[358, 264, 102, 104, 7]]",pathological
+1272,kidney_images\images\1272.jpg,kidney_images\labels\1272.txt,kidney_images\masks\1272.mat,True,True,0,0,0,0,0,[],healthy
+891,kidney_images\images\891.jpg,kidney_images\labels\891.txt,kidney_images\masks\891.mat,True,True,0,0,0,0,0,[],healthy
+76,kidney_images\images\76.jpg,kidney_images\labels\76.txt,kidney_images\masks\76.mat,True,True,1,0,0,0,2,"[[367, 110, 33, 33, 2], [419, 100, 66, 38, 2]]",pathological
+249,kidney_images\images\249.jpg,kidney_images\labels\249.txt,kidney_images\masks\249.mat,True,True,0,0,0,0,0,[],healthy
+470,kidney_images\images\470.jpg,kidney_images\labels\470.txt,kidney_images\masks\470.mat,True,True,1,1,1,0,4,"[[463, 154, 42, 45, 2], [456, 177, 38, 44, 2], [371, 160, 43, 33, 2], [417, 164, 35, 33, 2]]",pathological
+456,kidney_images\images\456.jpg,kidney_images\labels\456.txt,kidney_images\masks\456.mat,True,True,1,1,1,0,1,"[[399, 166, 31, 36, 2]]",pathological
+1048,kidney_images\images\1048.jpg,kidney_images\labels\1048.txt,kidney_images\masks\1048.mat,True,True,0,0,0,0,0,[],healthy
+1657,kidney_images\images\1657.jpg,kidney_images\labels\1657.txt,kidney_images\masks\1657.mat,True,True,1,0,0,0,5,"[[311, 232, 139, 92, 2], [334, 175, 83, 56, 2], [384, 125, 111, 78, 2], [271, 109, 106, 67, 2], [230, 158, 91, 58, 2]]",pathological
+938,kidney_images\images\938.jpg,kidney_images\labels\938.txt,kidney_images\masks\938.mat,True,True,1,0,0,0,1,"[[310, 114, 117, 85, 7]]",pathological
+1271,kidney_images\images\1271.jpg,kidney_images\labels\1271.txt,kidney_images\masks\1271.mat,True,True,1,0,0,0,1,"[[358, 217, 84, 74, 2]]",pathological
+1301,kidney_images\images\1301.jpg,kidney_images\labels\1301.txt,kidney_images\masks\1301.mat,True,True,0,0,0,0,0,[],healthy
+193,kidney_images\images\193.jpg,kidney_images\labels\193.txt,kidney_images\masks\193.mat,True,True,1,1,0,0,1,"[[264, 138, 228, 155, 7]]",pathological
+1931,kidney_images\images\1931.jpg,kidney_images\labels\1931.txt,kidney_images\masks\1931.mat,True,True,0,0,0,0,0,[],healthy
+1297,kidney_images\images\1297.jpg,kidney_images\labels\1297.txt,kidney_images\masks\1297.mat,True,True,1,0,0,1,1,"[[352, 153, 202, 134, 7]]",pathological
+281,kidney_images\images\281.jpg,kidney_images\labels\281.txt,kidney_images\masks\281.mat,True,True,1,0,0,0,2,"[[337, 144, 147, 101, 2], [451, 162, 51, 81, 1]]",pathological
+1823,kidney_images\images\1823.jpg,kidney_images\labels\1823.txt,kidney_images\masks\1823.mat,True,True,1,0,1,0,0,[],pathological
+121,kidney_images\images\121.jpg,kidney_images\labels\121.txt,kidney_images\masks\121.mat,True,True,1,0,0,0,1,"[[406, 206, 43, 41, 2]]",pathological
+1257,kidney_images\images\1257.jpg,kidney_images\labels\1257.txt,kidney_images\masks\1257.mat,True,True,0,0,0,0,0,[],healthy
+1214,kidney_images\images\1214.jpg,kidney_images\labels\1214.txt,kidney_images\masks\1214.mat,True,True,0,0,0,0,0,[],healthy
+136,kidney_images\images\136.jpg,kidney_images\labels\136.txt,kidney_images\masks\136.mat,True,True,1,0,0,0,1,"[[334, 88, 158, 136, 7]]",pathological
+54,kidney_images\images\54.jpg,kidney_images\labels\54.txt,kidney_images\masks\54.mat,True,True,1,0,0,0,1,"[[322, 115, 69, 56, 7]]",pathological
+224,kidney_images\images\224.jpg,kidney_images\labels\224.txt,kidney_images\masks\224.mat,True,True,1,0,0,0,1,"[[266, 174, 238, 147, 7]]",pathological
+415,kidney_images\images\415.jpg,kidney_images\labels\415.txt,kidney_images\masks\415.mat,True,True,1,1,0,0,5,"[[352, 148, 41, 52, 2], [427, 160, 33, 56, 1], [389, 164, 35, 57, 1], [300, 196, 30, 46, 1], [337, 201, 36, 32, 1]]",pathological
+100,kidney_images\images\100.jpg,kidney_images\labels\100.txt,kidney_images\masks\100.mat,True,True,1,0,0,0,2,"[[325, 180, 35, 72, 1], [224, 220, 46, 115, 8]]",pathological
+1956,kidney_images\images\1956.jpg,kidney_images\labels\1956.txt,kidney_images\masks\1956.mat,True,True,0,0,0,0,0,[],healthy
+840,kidney_images\images\840.jpg,kidney_images\labels\840.txt,kidney_images\masks\840.mat,True,True,1,0,0,0,1,"[[346, 157, 36, 15, 8]]",pathological
+1323,kidney_images\images\1323.jpg,kidney_images\labels\1323.txt,kidney_images\masks\1323.mat,True,True,0,0,0,0,0,[],healthy
+1959,kidney_images\images\1959.jpg,kidney_images\labels\1959.txt,kidney_images\masks\1959.mat,True,True,0,0,0,0,0,[],healthy
+1304,kidney_images\images\1304.jpg,kidney_images\labels\1304.txt,kidney_images\masks\1304.mat,True,True,1,0,0,0,4,"[[332, 155, 58, 56, 4], [415, 164, 45, 39, 4], [485, 168, 28, 29, 4], [494, 192, 44, 26, 4]]",pathological
+629,kidney_images\images\629.jpg,kidney_images\labels\629.txt,kidney_images\masks\629.mat,True,True,1,0,1,1,1,"[[395, 187, 121, 128, 7]]",pathological
+438,kidney_images\images\438.jpg,kidney_images\labels\438.txt,kidney_images\masks\438.mat,True,True,1,0,0,1,3,"[[355, 139, 46, 24, 2], [342, 170, 128, 67, 7], [464, 126, 43, 44, 7]]",pathological
+1460,kidney_images\images\1460.jpg,kidney_images\labels\1460.txt,kidney_images\masks\1460.mat,True,True,1,0,0,0,1,"[[377, 186, 41, 36, 2]]",pathological
+789,kidney_images\images\789.jpg,kidney_images\labels\789.txt,kidney_images\masks\789.mat,True,True,1,1,0,0,2,"[[298, 162, 45, 37, 2], [325, 160, 92, 69, 7]]",pathological
+1180,kidney_images\images\1180.jpg,kidney_images\labels\1180.txt,kidney_images\masks\1180.mat,True,True,0,0,0,0,0,[],healthy
+95,kidney_images\images\95.jpg,kidney_images\labels\95.txt,kidney_images\masks\95.mat,True,True,1,1,0,0,0,[],pathological
+1511,kidney_images\images\1511.jpg,kidney_images\labels\1511.txt,kidney_images\masks\1511.mat,True,True,1,0,0,1,1,"[[406, 167, 106, 57, 7]]",pathological
+717,kidney_images\images\717.jpg,kidney_images\labels\717.txt,kidney_images\masks\717.mat,True,True,1,1,0,0,4,"[[403, 185, 73, 59, 4], [342, 188, 62, 64, 4], [287, 176, 60, 47, 9], [375, 163, 61, 23, 9]]",pathological
+1539,kidney_images\images\1539.jpg,kidney_images\labels\1539.txt,kidney_images\masks\1539.mat,True,True,1,1,1,0,0,[],pathological
+1857,kidney_images\images\1857.jpg,kidney_images\labels\1857.txt,kidney_images\masks\1857.mat,True,True,0,0,0,0,0,[],healthy
+1775,kidney_images\images\1775.jpg,kidney_images\labels\1775.txt,kidney_images\masks\1775.mat,True,True,1,1,1,0,0,[],pathological
+326,kidney_images\images\326.jpg,kidney_images\labels\326.txt,kidney_images\masks\326.mat,True,True,0,0,0,0,0,[],healthy
+109,kidney_images\images\109.jpg,kidney_images\labels\109.txt,kidney_images\masks\109.mat,True,True,1,0,0,0,1,"[[276, 161, 263, 176, 7]]",pathological
+1462,kidney_images\images\1462.jpg,kidney_images\labels\1462.txt,kidney_images\masks\1462.mat,True,True,0,0,0,0,0,[],healthy
+469,kidney_images\images\469.jpg,kidney_images\labels\469.txt,kidney_images\masks\469.mat,True,True,1,1,1,0,3,"[[461, 151, 47, 52, 2], [413, 163, 31, 26, 2], [373, 158, 41, 35, 2]]",pathological
+1253,kidney_images\images\1253.jpg,kidney_images\labels\1253.txt,kidney_images\masks\1253.mat,True,True,0,0,0,0,0,[],healthy
+1671,kidney_images\images\1671.jpg,kidney_images\labels\1671.txt,kidney_images\masks\1671.mat,True,True,1,1,1,0,0,[],pathological
+1467,kidney_images\images\1467.jpg,kidney_images\labels\1467.txt,kidney_images\masks\1467.mat,True,True,1,1,1,0,3,"[[308, 162, 54, 49, 9], [401, 192, 36, 35, 2], [437, 198, 27, 25, 2]]",pathological
+1529,kidney_images\images\1529.jpg,kidney_images\labels\1529.txt,kidney_images\masks\1529.mat,True,True,1,1,1,0,0,[],pathological
+110,kidney_images\images\110.jpg,kidney_images\labels\110.txt,kidney_images\masks\110.mat,True,True,1,0,0,0,1,"[[276, 165, 197, 127, 7]]",pathological
+1773,kidney_images\images\1773.jpg,kidney_images\labels\1773.txt,kidney_images\masks\1773.mat,True,True,0,0,0,0,0,[],healthy
+1436,kidney_images\images\1436.jpg,kidney_images\labels\1436.txt,kidney_images\masks\1436.mat,True,True,0,0,0,0,0,[],healthy
+42,kidney_images\images\42.jpg,kidney_images\labels\42.txt,kidney_images\masks\42.mat,True,True,1,0,0,0,1,"[[323, 158, 138, 57, 7]]",pathological
+1659,kidney_images\images\1659.jpg,kidney_images\labels\1659.txt,kidney_images\masks\1659.mat,True,True,1,1,1,0,0,[],pathological
+1191,kidney_images\images\1191.jpg,kidney_images\labels\1191.txt,kidney_images\masks\1191.mat,True,True,1,1,1,0,0,[],pathological
+1387,kidney_images\images\1387.jpg,kidney_images\labels\1387.txt,kidney_images\masks\1387.mat,True,True,0,0,0,0,0,[],healthy
+552,kidney_images\images\552.jpg,kidney_images\labels\552.txt,kidney_images\masks\552.mat,True,True,1,1,1,0,3,"[[297, 158, 38, 28, 2], [270, 174, 54, 45, 2], [339, 189, 53, 49, 7]]",pathological
+743,kidney_images\images\743.jpg,kidney_images\labels\743.txt,kidney_images\masks\743.mat,True,True,1,0,0,0,1,"[[423, 142, 59, 46, 9]]",pathological
+490,kidney_images\images\490.jpg,kidney_images\labels\490.txt,kidney_images\masks\490.mat,True,True,1,0,0,1,4,"[[350, 179, 45, 33, 2], [341, 151, 34, 40, 2], [305, 163, 46, 31, 2], [265, 166, 38, 30, 2]]",pathological
+1362,kidney_images\images\1362.jpg,kidney_images\labels\1362.txt,kidney_images\masks\1362.mat,True,True,1,0,0,0,1,"[[306, 144, 52, 44, 5]]",pathological
+1660,kidney_images\images\1660.jpg,kidney_images\labels\1660.txt,kidney_images\masks\1660.mat,True,True,1,1,1,0,1,"[[318, 174, 223, 165, 7]]",pathological
+1608,kidney_images\images\1608.jpg,kidney_images\labels\1608.txt,kidney_images\masks\1608.mat,True,True,0,0,0,0,0,[],healthy
+1008,kidney_images\images\1008.jpg,kidney_images\labels\1008.txt,kidney_images\masks\1008.mat,True,True,1,0,0,0,2,"[[352, 162, 150, 84, 7], [435, 124, 78, 110, 7]]",pathological
+1709,kidney_images\images\1709.jpg,kidney_images\labels\1709.txt,kidney_images\masks\1709.mat,True,True,1,1,1,0,2,"[[341, 148, 48, 67, 4], [434, 141, 39, 54, 4]]",pathological
+1684,kidney_images\images\1684.jpg,kidney_images\labels\1684.txt,kidney_images\masks\1684.mat,True,True,1,1,0,0,2,"[[311, 127, 68, 60, 4], [475, 118, 53, 62, 4]]",pathological
+539,kidney_images\images\539.jpg,kidney_images\labels\539.txt,kidney_images\masks\539.mat,True,True,1,1,1,0,1,"[[361, 145, 43, 44, 2]]",pathological
+334,kidney_images\images\334.jpg,kidney_images\labels\334.txt,kidney_images\masks\334.mat,True,True,0,0,0,1,0,[],healthy
+496,kidney_images\images\496.jpg,kidney_images\labels\496.txt,kidney_images\masks\496.mat,True,True,1,1,0,0,3,"[[331, 146, 36, 32, 4], [456, 203, 44, 41, 2], [426, 146, 44, 38, 2]]",pathological
+1219,kidney_images\images\1219.jpg,kidney_images\labels\1219.txt,kidney_images\masks\1219.mat,True,True,1,1,1,0,1,"[[496, 195, 61, 55, 2]]",pathological
+525,kidney_images\images\525.jpg,kidney_images\labels\525.txt,kidney_images\masks\525.mat,True,True,1,1,1,0,2,"[[347, 125, 41, 52, 2], [466, 95, 36, 33, 2]]",pathological
+1534,kidney_images\images\1534.jpg,kidney_images\labels\1534.txt,kidney_images\masks\1534.mat,True,True,1,0,0,0,1,"[[363, 195, 59, 38, 2]]",pathological
+60,kidney_images\images\60.jpg,kidney_images\labels\60.txt,kidney_images\masks\60.mat,True,True,1,0,0,0,2,"[[291, 213, 46, 35, 7], [382, 202, 62, 30, 7]]",pathological
+1946,kidney_images\images\1946.jpg,kidney_images\labels\1946.txt,kidney_images\masks\1946.mat,True,True,0,0,0,0,0,[],healthy
+298,kidney_images\images\298.jpg,kidney_images\labels\298.txt,kidney_images\masks\298.mat,True,True,1,0,0,0,2,"[[424, 159, 54, 35, 2], [328, 120, 51, 64, 2]]",pathological
+1027,kidney_images\images\1027.jpg,kidney_images\labels\1027.txt,kidney_images\masks\1027.mat,True,True,1,0,0,0,1,"[[341, 208, 35, 37, 2]]",pathological
+1154,kidney_images\images\1154.jpg,kidney_images\labels\1154.txt,kidney_images\masks\1154.mat,True,True,1,1,1,0,1,"[[262, 122, 122, 102, 2]]",pathological
+1130,kidney_images\images\1130.jpg,kidney_images\labels\1130.txt,kidney_images\masks\1130.mat,True,True,1,1,0,0,1,"[[411, 266, 75, 74, 7]]",pathological
+1113,kidney_images\images\1113.jpg,kidney_images\labels\1113.txt,kidney_images\masks\1113.mat,True,True,1,0,0,0,1,"[[401, 204, 41, 54, 2]]",pathological
+1730,kidney_images\images\1730.jpg,kidney_images\labels\1730.txt,kidney_images\masks\1730.mat,True,True,1,1,1,0,0,[],pathological
+477,kidney_images\images\477.jpg,kidney_images\labels\477.txt,kidney_images\masks\477.mat,True,True,1,1,1,0,2,"[[442, 183, 43, 40, 2], [324, 221, 46, 33, 2]]",pathological
+1354,kidney_images\images\1354.jpg,kidney_images\labels\1354.txt,kidney_images\masks\1354.mat,True,True,0,0,0,0,0,[],healthy
+1701,kidney_images\images\1701.jpg,kidney_images\labels\1701.txt,kidney_images\masks\1701.mat,True,True,1,0,0,0,2,"[[406, 219, 49, 29, 2], [294, 170, 45, 33, 2]]",pathological
+911,kidney_images\images\911.jpg,kidney_images\labels\911.txt,kidney_images\masks\911.mat,True,True,1,0,0,0,2,"[[326, 245, 121, 98, 7], [342, 150, 94, 59, 7]]",pathological
+877,kidney_images\images\877.jpg,kidney_images\labels\877.txt,kidney_images\masks\877.mat,True,True,1,1,1,0,2,"[[397, 121, 42, 30, 9], [320, 140, 54, 47, 2]]",pathological
+1541,kidney_images\images\1541.jpg,kidney_images\labels\1541.txt,kidney_images\masks\1541.mat,True,True,0,0,0,0,0,[],healthy
+653,kidney_images\images\653.jpg,kidney_images\labels\653.txt,kidney_images\masks\653.mat,True,True,1,0,0,0,3,"[[299, 117, 50, 36, 2], [352, 105, 33, 52, 2], [390, 125, 33, 41, 2]]",pathological
+617,kidney_images\images\617.jpg,kidney_images\labels\617.txt,kidney_images\masks\617.mat,True,True,1,1,1,0,2,"[[288, 168, 124, 114, 7], [389, 156, 165, 150, 7]]",pathological
+111,kidney_images\images\111.jpg,kidney_images\labels\111.txt,kidney_images\masks\111.mat,True,True,1,0,0,0,2,"[[440, 182, 27, 48, 2], [299, 177, 33, 33, 2]]",pathological
+1347,kidney_images\images\1347.jpg,kidney_images\labels\1347.txt,kidney_images\masks\1347.mat,True,True,0,0,0,1,0,[],healthy
+1978,kidney_images\images\1978.jpg,kidney_images\labels\1978.txt,kidney_images\masks\1978.mat,True,True,1,0,0,0,1,"[[344, 115, 96, 88, 1]]",pathological
+714,kidney_images\images\714.jpg,kidney_images\labels\714.txt,kidney_images\masks\714.mat,True,True,1,0,1,0,1,"[[311, 204, 61, 53, 2]]",pathological
+289,kidney_images\images\289.jpg,kidney_images\labels\289.txt,kidney_images\masks\289.mat,True,True,1,0,0,0,1,"[[266, 178, 201, 106, 7]]",pathological
+693,kidney_images\images\693.jpg,kidney_images\labels\693.txt,kidney_images\masks\693.mat,True,True,1,0,0,0,3,"[[311, 148, 109, 62, 2], [383, 95, 94, 66, 2], [429, 172, 22, 39, 2]]",pathological
+1135,kidney_images\images\1135.jpg,kidney_images\labels\1135.txt,kidney_images\masks\1135.mat,True,True,1,1,0,0,1,"[[442, 150, 35, 35, 2]]",pathological
+756,kidney_images\images\756.jpg,kidney_images\labels\756.txt,kidney_images\masks\756.mat,True,True,1,1,0,0,0,[],pathological
+1517,kidney_images\images\1517.jpg,kidney_images\labels\1517.txt,kidney_images\masks\1517.mat,True,True,1,1,1,0,2,"[[348, 162, 65, 65, 2], [423, 181, 105, 53, 7]]",pathological
+1193,kidney_images\images\1193.jpg,kidney_images\labels\1193.txt,kidney_images\masks\1193.mat,True,True,1,0,0,1,3,"[[385, 167, 59, 46, 7], [312, 220, 56, 40, 7], [311, 145, 51, 35, 4]]",pathological
+108,kidney_images\images\108.jpg,kidney_images\labels\108.txt,kidney_images\masks\108.mat,True,True,1,0,0,0,1,"[[251, 146, 219, 149, 7]]",pathological
+567,kidney_images\images\567.jpg,kidney_images\labels\567.txt,kidney_images\masks\567.mat,True,True,1,0,1,0,2,"[[272, 92, 73, 75, 2], [337, 76, 80, 117, 3]]",pathological
+1314,kidney_images\images\1314.jpg,kidney_images\labels\1314.txt,kidney_images\masks\1314.mat,True,True,1,1,1,0,0,[],pathological
+8,kidney_images\images\8.jpg,kidney_images\labels\8.txt,kidney_images\masks\8.mat,True,True,1,0,0,0,1,"[[383, 214, 119, 73, 7]]",pathological
+862,kidney_images\images\862.jpg,kidney_images\labels\862.txt,kidney_images\masks\862.mat,True,True,1,1,0,0,1,"[[346, 109, 60, 41, 2]]",pathological
+318,kidney_images\images\318.jpg,kidney_images\labels\318.txt,kidney_images\masks\318.mat,True,True,1,0,0,0,2,"[[366, 206, 37, 41, 2], [429, 215, 33, 42, 2]]",pathological
+425,kidney_images\images\425.jpg,kidney_images\labels\425.txt,kidney_images\masks\425.mat,True,True,1,1,1,0,3,"[[266, 162, 40, 31, 2], [330, 153, 36, 49, 2], [294, 152, 39, 56, 2]]",pathological
+1441,kidney_images\images\1441.jpg,kidney_images\labels\1441.txt,kidney_images\masks\1441.mat,True,True,0,0,0,0,0,[],healthy
+282,kidney_images\images\282.jpg,kidney_images\labels\282.txt,kidney_images\masks\282.mat,True,True,1,0,0,0,2,"[[312, 144, 136, 101, 2], [419, 119, 52, 77, 2]]",pathological
+860,kidney_images\images\860.jpg,kidney_images\labels\860.txt,kidney_images\masks\860.mat,True,True,1,0,0,0,1,"[[325, 104, 71, 41, 2]]",pathological
+1596,kidney_images\images\1596.jpg,kidney_images\labels\1596.txt,kidney_images\masks\1596.mat,True,True,0,0,0,1,0,[],healthy
+241,kidney_images\images\241.jpg,kidney_images\labels\241.txt,kidney_images\masks\241.mat,True,True,1,1,1,0,3,"[[364, 269, 52, 40, 4], [372, 233, 43, 41, 4], [422, 192, 41, 51, 4]]",pathological
+1105,kidney_images\images\1105.jpg,kidney_images\labels\1105.txt,kidney_images\masks\1105.mat,True,True,0,0,0,0,0,[],healthy
+729,kidney_images\images\729.jpg,kidney_images\labels\729.txt,kidney_images\masks\729.mat,True,True,1,0,0,0,2,"[[393, 163, 29, 33, 4], [469, 168, 30, 41, 4]]",pathological
+1817,kidney_images\images\1817.jpg,kidney_images\labels\1817.txt,kidney_images\masks\1817.mat,True,True,1,0,0,0,3,"[[253, 152, 77, 59, 2], [364, 140, 83, 40, 8], [395, 138, 46, 32, 9]]",pathological
+1493,kidney_images\images\1493.jpg,kidney_images\labels\1493.txt,kidney_images\masks\1493.mat,True,True,1,0,0,0,1,"[[361, 185, 49, 38, 2]]",pathological
+940,kidney_images\images\940.jpg,kidney_images\labels\940.txt,kidney_images\masks\940.mat,True,True,1,0,0,0,1,"[[294, 132, 151, 77, 7]]",pathological
+1472,kidney_images\images\1472.jpg,kidney_images\labels\1472.txt,kidney_images\masks\1472.mat,True,True,1,1,0,0,1,"[[376, 182, 48, 79, 7]]",pathological
+1447,kidney_images\images\1447.jpg,kidney_images\labels\1447.txt,kidney_images\masks\1447.mat,True,True,0,0,0,0,0,[],healthy
+1962,kidney_images\images\1962.jpg,kidney_images\labels\1962.txt,kidney_images\masks\1962.mat,True,True,1,0,0,0,1,"[[398, 170, 85, 70, 2]]",pathological
+53,kidney_images\images\53.jpg,kidney_images\labels\53.txt,kidney_images\masks\53.mat,True,True,1,0,0,0,1,"[[349, 141, 128, 57, 7]]",pathological
+1620,kidney_images\images\1620.jpg,kidney_images\labels\1620.txt,kidney_images\masks\1620.mat,True,True,1,1,0,0,0,[],pathological
+1556,kidney_images\images\1556.jpg,kidney_images\labels\1556.txt,kidney_images\masks\1556.mat,True,True,1,1,1,0,0,[],pathological
+266,kidney_images\images\266.jpg,kidney_images\labels\266.txt,kidney_images\masks\266.mat,True,True,0,0,0,0,0,[],healthy
+1563,kidney_images\images\1563.jpg,kidney_images\labels\1563.txt,kidney_images\masks\1563.mat,True,True,0,0,0,0,0,[],healthy
+308,kidney_images\images\308.jpg,kidney_images\labels\308.txt,kidney_images\masks\308.mat,True,True,1,1,1,0,3,"[[353, 176, 64, 72, 2], [439, 159, 28, 37, 2], [480, 201, 21, 37, 2]]",pathological
+830,kidney_images\images\830.jpg,kidney_images\labels\830.txt,kidney_images\masks\830.mat,True,True,1,1,1,0,1,"[[428, 176, 38, 41, 2]]",pathological
+1983,kidney_images\images\1983.jpg,kidney_images\labels\1983.txt,kidney_images\masks\1983.mat,True,True,1,0,0,0,2,"[[276, 103, 33, 18, 2], [307, 97, 33, 31, 2]]",pathological
+402,kidney_images\images\402.jpg,kidney_images\labels\402.txt,kidney_images\masks\402.mat,True,True,1,0,0,1,1,"[[383, 199, 94, 55, 7]]",pathological
+1196,kidney_images\images\1196.jpg,kidney_images\labels\1196.txt,kidney_images\masks\1196.mat,True,True,1,1,1,0,3,"[[361, 170, 39, 39, 2], [318, 201, 46, 40, 7], [421, 208, 50, 57, 7]]",pathological
+1178,kidney_images\images\1178.jpg,kidney_images\labels\1178.txt,kidney_images\masks\1178.mat,True,True,1,0,0,0,2,"[[384, 184, 28, 24, 4], [438, 179, 20, 22, 4]]",pathological
+1580,kidney_images\images\1580.jpg,kidney_images\labels\1580.txt,kidney_images\masks\1580.mat,True,True,0,0,0,0,0,[],healthy
+1531,kidney_images\images\1531.jpg,kidney_images\labels\1531.txt,kidney_images\masks\1531.mat,True,True,1,0,0,0,3,"[[239, 142, 172, 133, 2], [303, 237, 133, 84, 2], [480, 143, 78, 48, 2]]",pathological
+937,kidney_images\images\937.jpg,kidney_images\labels\937.txt,kidney_images\masks\937.mat,True,True,1,0,0,1,1,"[[322, 105, 116, 98, 7]]",pathological
+1378,kidney_images\images\1378.jpg,kidney_images\labels\1378.txt,kidney_images\masks\1378.mat,True,True,1,0,0,0,2,"[[420, 177, 29, 31, 8], [435, 199, 31, 40, 2]]",pathological
+1166,kidney_images\images\1166.jpg,kidney_images\labels\1166.txt,kidney_images\masks\1166.mat,True,True,0,0,0,0,0,[],healthy
+1293,kidney_images\images\1293.jpg,kidney_images\labels\1293.txt,kidney_images\masks\1293.mat,True,True,1,1,0,0,1,"[[365, 216, 190, 131, 7]]",pathological
+274,kidney_images\images\274.jpg,kidney_images\labels\274.txt,kidney_images\masks\274.mat,True,True,1,0,0,0,1,"[[424, 188, 35, 40, 1]]",pathological
+159,kidney_images\images\159.jpg,kidney_images\labels\159.txt,kidney_images\masks\159.mat,True,True,1,0,0,0,2,"[[268, 190, 49, 41, 7], [356, 156, 41, 41, 7]]",pathological
+26,kidney_images\images\26.jpg,kidney_images\labels\26.txt,kidney_images\masks\26.mat,True,True,1,0,0,0,1,"[[247, 110, 293, 141, 7]]",pathological
+1223,kidney_images\images\1223.jpg,kidney_images\labels\1223.txt,kidney_images\masks\1223.mat,True,True,1,1,1,0,1,"[[450, 105, 58, 74, 2]]",pathological
+549,kidney_images\images\549.jpg,kidney_images\labels\549.txt,kidney_images\masks\549.mat,True,True,1,1,1,0,1,"[[362, 182, 46, 41, 4]]",pathological
+1343,kidney_images\images\1343.jpg,kidney_images\labels\1343.txt,kidney_images\masks\1343.mat,True,True,1,0,0,0,1,"[[497, 83, 49, 51, 5]]",pathological
+49,kidney_images\images\49.jpg,kidney_images\labels\49.txt,kidney_images\masks\49.mat,True,True,1,0,0,0,3,"[[83, 152, 67, 54, 2], [167, 96, 40, 39, 2], [229, 116, 48, 46, 2]]",pathological
+1601,kidney_images\images\1601.jpg,kidney_images\labels\1601.txt,kidney_images\masks\1601.mat,True,True,1,0,0,0,2,"[[302, 245, 105, 144, 2], [328, 199, 81, 74, 7]]",pathological
+1116,kidney_images\images\1116.jpg,kidney_images\labels\1116.txt,kidney_images\masks\1116.mat,True,True,1,1,1,0,0,[],pathological
+798,kidney_images\images\798.jpg,kidney_images\labels\798.txt,kidney_images\masks\798.mat,True,True,1,1,1,0,3,"[[350, 141, 68, 60, 4], [403, 133, 62, 71, 4], [475, 170, 49, 53, 2]]",pathological
+1279,kidney_images\images\1279.jpg,kidney_images\labels\1279.txt,kidney_images\masks\1279.mat,True,True,0,0,0,0,0,[],healthy
+65,kidney_images\images\65.jpg,kidney_images\labels\65.txt,kidney_images\masks\65.mat,True,True,1,0,1,0,1,"[[299, 188, 73, 74, 2]]",pathological
+1576,kidney_images\images\1576.jpg,kidney_images\labels\1576.txt,kidney_images\masks\1576.mat,True,True,1,1,0,0,0,[],pathological
+1777,kidney_images\images\1777.jpg,kidney_images\labels\1777.txt,kidney_images\masks\1777.mat,True,True,0,0,0,0,0,[],healthy
+1559,kidney_images\images\1559.jpg,kidney_images\labels\1559.txt,kidney_images\masks\1559.mat,True,True,0,0,0,0,0,[],healthy
+430,kidney_images\images\430.jpg,kidney_images\labels\430.txt,kidney_images\masks\430.mat,True,True,1,0,0,0,3,"[[320, 161, 83, 50, 7], [404, 122, 92, 49, 7], [466, 106, 82, 53, 7]]",pathological
+279,kidney_images\images\279.jpg,kidney_images\labels\279.txt,kidney_images\masks\279.mat,True,True,1,0,0,0,1,"[[420, 120, 58, 49, 2]]",pathological
+1321,kidney_images\images\1321.jpg,kidney_images\labels\1321.txt,kidney_images\masks\1321.mat,True,True,0,0,0,0,0,[],healthy
+1770,kidney_images\images\1770.jpg,kidney_images\labels\1770.txt,kidney_images\masks\1770.mat,True,True,0,0,0,1,0,[],healthy
+1492,kidney_images\images\1492.jpg,kidney_images\labels\1492.txt,kidney_images\masks\1492.mat,True,True,1,0,0,0,1,"[[407, 190, 40, 41, 2]]",pathological
+1871,kidney_images\images\1871.jpg,kidney_images\labels\1871.txt,kidney_images\masks\1871.mat,True,True,1,1,1,0,0,[],pathological
+863,kidney_images\images\863.jpg,kidney_images\labels\863.txt,kidney_images\masks\863.mat,True,True,1,1,0,0,1,"[[321, 176, 178, 85, 7]]",pathological
+990,kidney_images\images\990.jpg,kidney_images\labels\990.txt,kidney_images\masks\990.mat,True,True,0,0,0,0,0,[],healthy
+1498,kidney_images\images\1498.jpg,kidney_images\labels\1498.txt,kidney_images\masks\1498.mat,True,True,1,1,1,0,1,"[[422, 185, 109, 41, 8]]",pathological
+663,kidney_images\images\663.jpg,kidney_images\labels\663.txt,kidney_images\masks\663.mat,True,True,1,1,0,0,1,"[[381, 159, 36, 36, 5]]",pathological
+1147,kidney_images\images\1147.jpg,kidney_images\labels\1147.txt,kidney_images\masks\1147.mat,True,True,1,1,1,0,1,"[[458, 200, 37, 36, 2]]",pathological

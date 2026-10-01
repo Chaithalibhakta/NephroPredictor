@@ -1,0 +1,5 @@
+Model,Task,Accuracy,Precision,Recall,F1
+Clinical Random Forest,CKD Classification,0.99998,1.0,0.99996,0.99998
+Clinical Stage Random Forest,CKD Stage Classification,1.0,1.0,1.0,1.0
+Image Random Forest,Ultrasound Classification,0.7517,0.7766,0.9522,0.8555
+Image XGBoost,Ultrasound Classification,0.7416,0.7887,0.9087,0.8444

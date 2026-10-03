@@ -7,3 +7,6 @@ models/*.pkl
 
 # U-Net trained models
 segmentation/models/*.pth
+
+venv/
+.venv/

@@ -1,8 +1,9 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
+import { jsPDF } from "jspdf";
 import "./App.css";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "http://127.0.0.1:8001";
 
 const initialClinicalData = {
   serum_creatinine: "",
@@ -27,6 +28,195 @@ const initialClinicalData = {
   months: "",
 };
 
+const demoCases = {
+  "No CKD": {
+    patient: {
+      patientId: "DEMO-NO-CKD",
+      patientName: "Demo Patient - No CKD",
+      age: "40",
+      gender: "Female",
+    },
+    clinical: {
+      serum_creatinine: 0.8,
+      gfr: 95,
+      bun: 18,
+      serum_calcium: 9.4,
+      oxalate_levels: 1.2,
+      urine_ph: 6.2,
+      blood_pressure: 118,
+      ana: 0,
+      c3_c4: 1,
+      hematuria: 0,
+      smoking: 0,
+      alcohol: 0,
+      painkiller_usage: 0,
+      family_history: 0,
+      physical_activity: 2,
+      diet: 0,
+      water_intake: 3,
+      weight_changes: 0,
+      stress_level: 1,
+      months: 6,
+    },
+  },
+
+  "Stage 1": {
+  patient: {
+    patientId: "DEMO-STAGE-1",
+    patientName: "Demo Patient - Stage 1",
+    age: "42",
+    gender: "Female",
+  },
+  clinical: {
+    serum_creatinine: 0.3,
+    gfr: 126.502590,
+    bun: 44.286194,
+    serum_calcium: 11.480861,
+    oxalate_levels: 1.364023,
+    urine_ph: 6.006007,
+    blood_pressure: 121.636461,
+    ana: 0,
+    c3_c4: 1,
+    hematuria: 1,
+    smoking: 1,
+    alcohol: 1,
+    painkiller_usage: 0,
+    family_history: 1,
+    physical_activity: 2,
+    diet: 0,
+    water_intake: 3.189235,
+    weight_changes: 1,
+    stress_level: 1,
+    months: 8,
+  },
+},
+    
+
+  "Stage 2": {
+  patient: {
+    patientId: "DEMO-STAGE-2",
+    patientName: "Demo Patient - Stage 2",
+    age: "48",
+    gender: "Male",
+  },
+  clinical: {
+    serum_creatinine: 1.7,
+    gfr: 68,
+    bun: 30,
+    serum_calcium: 8.6,
+    oxalate_levels: 2.8,
+    urine_ph: 5.6,
+    blood_pressure: 145,
+    ana: 1,
+    c3_c4: 1,
+    hematuria: 1,
+    smoking: 1,
+    alcohol: 1,
+    painkiller_usage: 1,
+    family_history: 1,
+    physical_activity: 0,
+    diet: 2,
+    water_intake: 1,
+    weight_changes: 1,
+    stress_level: 3,
+    months: 18,
+  },
+},
+
+  "Stage 3": {
+    patient: {
+      patientId: "DEMO-STAGE-3",
+      patientName: "Demo Patient - Stage 3",
+      age: "55",
+      gender: "Male",
+    },
+    clinical: {
+      serum_creatinine: 1.8,
+      gfr: 42,
+      bun: 32,
+      serum_calcium: 8.7,
+      oxalate_levels: 3,
+      urine_ph: 5.7,
+      blood_pressure: 145,
+      ana: 1,
+      c3_c4: 1,
+      hematuria: 1,
+      smoking: 1,
+      alcohol: 1,
+      painkiller_usage: 1,
+      family_history: 1,
+      physical_activity: 0,
+      diet: 2,
+      water_intake: 1,
+      weight_changes: 1,
+      stress_level: 3,
+      months: 24,
+    },
+  },
+
+  "Stage 4": {
+    patient: {
+      patientId: "DEMO-STAGE-4",
+      patientName: "Demo Patient - Stage 4",
+      age: "62",
+      gender: "Male",
+    },
+    clinical: {
+      serum_creatinine: 2.8,
+      gfr: 25,
+      bun: 48,
+      serum_calcium: 8.1,
+      oxalate_levels: 4,
+      urine_ph: 5.4,
+      blood_pressure: 160,
+      ana: 1,
+      c3_c4: 0,
+      hematuria: 1,
+      smoking: 1,
+      alcohol: 1,
+      painkiller_usage: 1,
+      family_history: 1,
+      physical_activity: 0,
+      diet: 2,
+      water_intake: 1,
+      weight_changes: 2,
+      stress_level: 3,
+      months: 36,
+    },
+  },
+
+  "Stage 5": {
+    patient: {
+      patientId: "DEMO-STAGE-5",
+      patientName: "Demo Patient - Stage 5",
+      age: "68",
+      gender: "Male",
+    },
+    clinical: {
+      serum_creatinine: 5.2,
+      gfr: 10,
+      bun: 82,
+      serum_calcium: 7.4,
+      oxalate_levels: 5,
+      urine_ph: 5.1,
+      blood_pressure: 175,
+      ana: 1,
+      c3_c4: 0,
+      hematuria: 1,
+      smoking: 1,
+      alcohol: 1,
+      painkiller_usage: 1,
+      family_history: 1,
+      physical_activity: 0,
+      diet: 2,
+      water_intake: 0,
+      weight_changes: 2,
+      stress_level: 3,
+      months: 48,
+    },
+  },
+};
+
 function App() {
   const [page, setPage] = useState(1);
 
@@ -39,6 +229,8 @@ function App() {
 
   const [clinicalData, setClinicalData] = useState(initialClinicalData);
 
+  const [selectedDemo, setSelectedDemo] = useState("");
+
   const [ultrasound, setUltrasound] = useState(null);
   const [preview, setPreview] = useState("");
 
@@ -48,24 +240,50 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const handleDemoChange = (e) => {
+    const value = e.target.value;
+    setSelectedDemo(value);
+
+    if (!value || !demoCases[value]) {
+      return;
+    }
+
+    const demo = demoCases[value];
+
+    setPatient(demo.patient);
+    setClinicalData(demo.clinical);
+    setError("");
+  };
+
   const handlePatientChange = (e) => {
-    setPatient({
-      ...patient,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    setPatient((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleClinicalChange = (e) => {
-    setClinicalData({
-      ...clinicalData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    setClinicalData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
 
     if (!file) return;
+
+    const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+
+    if (!validTypes.includes(file.type)) {
+      setError("Please upload a JPG, JPEG, or PNG ultrasound image.");
+      return;
+    }
 
     setUltrasound(file);
     setPreview(URL.createObjectURL(file));
@@ -83,54 +301,64 @@ function App() {
       return false;
     }
 
-    const missingClinical = Object.values(clinicalData).some(
-      (value) => value === ""
-    );
-
-    if (missingClinical) {
-      setError("Please enter all clinical parameters before continuing.");
-      return false;
+    for (const [key, value] of Object.entries(clinicalData)) {
+      if (value === "" || value === null || value === undefined) {
+        setError(`Please enter a value for ${key.replaceAll("_", " ")}.`);
+        return false;
+      }
     }
 
-    setError("");
     return true;
   };
 
-  const goToUltrasound = () => {
-    if (validatePageOne()) {
-      setPage(2);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+  const validatePageTwo = () => {
+    if (!ultrasound) {
+      setError("Please upload a kidney ultrasound image.");
+      return false;
     }
+
+    return true;
   };
 
-  const convertClinicalData = () => {
-    const converted = {};
+  const getStageSeverity = (stage) => {
+    if (!stage) {
+      return "Not available";
+    }
 
-    Object.entries(clinicalData).forEach(([key, value]) => {
-      converted[key] = Number(value);
-    });
+    const stageNumber = Number(
+      String(stage).replace(/\D/g, "")
+    );
 
-    return converted;
+    switch (stageNumber) {
+      case 1:
+        return "Mild";
+      case 2:
+        return "Mild";
+      case 3:
+        return "Moderate";
+      case 4:
+        return "Severe";
+      case 5:
+        return "Kidney Failure";
+      default:
+        return "Not available";
+    }
   };
 
   const generateResults = async () => {
-    if (!ultrasound) {
-      setError("Please upload a kidney ultrasound image.");
-      return;
-    }
+    if (!validatePageTwo()) return;
 
     setLoading(true);
     setError("");
 
     try {
-      const clinicalPayload = {
-        ...convertClinicalData(),
-      };
+      const clinicalPayload = Object.fromEntries(
+        Object.entries(clinicalData).map(([key, value]) => [
+          key,
+          Number(value),
+        ])
+      );
 
-      /*
-       * STEP 1
-       * Send clinical data to FastAPI.
-       */
       const clinicalResponse = await fetch(`${API_URL}/predict`, {
         method: "POST",
         headers: {
@@ -143,105 +371,77 @@ function App() {
         throw new Error("Clinical prediction failed.");
       }
 
-      const clinical = await clinicalResponse.json();
+      const clinicalDataResponse = await clinicalResponse.json();
 
-      setClinicalResult(clinical);
+      setClinicalResult(clinicalDataResponse);
 
-      /*
-       * STEP 2
-       * Send clinical data + ultrasound to the fusion endpoint.
-       *
-       * If U-Net is unavailable on the backend, the backend will return
-       * an error. We keep the clinical result and clearly show the
-       * ultrasound status instead of inventing an image prediction.
-       */
-      let fusion = null;
+     const formData = new FormData();
 
-      try {
-        const formData = new FormData();
+formData.append(
+  "patient",
+  JSON.stringify(clinicalPayload)
+);
 
-        formData.append(
-          "patient",
-          JSON.stringify(clinicalPayload)
-        );
+formData.append(
+  "file",
+  ultrasound
+);
 
-        formData.append("file", ultrasound);
-
-        const fusionResponse = await fetch(
-          `${API_URL}/fusion-predict`,
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-
-        if (fusionResponse.ok) {
-          fusion = await fusionResponse.json();
+      const fusionResponse = await fetch(
+        `${API_URL}/fusion-predict`,
+        {
+          method: "POST",
+          body: formData,
         }
-      } catch (imageError) {
-        console.log("Ultrasound analysis unavailable:", imageError);
-      }
-
-      /*
-       * STEP 3
-       * Prepare dashboard result.
-       */
-      const clinicalPrediction =
-        clinical.prediction ||
-        clinical.result ||
-        clinical.ckd_prediction ||
-        "Unknown";
-
-      const clinicalConfidence = Number(
-        clinical.confidence ?? 0
       );
 
-      const clinicalStage =
-        clinical.stage ??
-        clinical.ckd_stage ??
-        null;
+      if (!fusionResponse.ok) {
+        throw new Error("Fusion prediction failed.");
+      }
 
-      const clinicalRisk =
-        clinical.risk ||
-        clinical.severity ||
-        "Not available";
-
-      const imageProbability =
-        fusion?.image_probability ?? null;
-
-      const finalProbability =
-        fusion?.final_probability ??
-        clinicalConfidence;
+      const fusionData = await fusionResponse.json();
 
       const finalPrediction =
-        fusion?.final_prediction ??
-        clinicalPrediction;
+        fusionData.prediction ||
+        fusionData.final_prediction ||
+        fusionData.clinical_prediction ||
+        "Not Available";
 
       const finalStage =
-        fusion?.stage ??
-        clinicalStage;
+  fusionData.stage ||
+  fusionData.stage_name ||
+  (
+    fusionData.stage_number
+      ? `Stage ${fusionData.stage_number}`
+      : null
+  );
 
       const finalSeverity =
-        fusion?.severity ??
-        clinicalRisk;
+        finalPrediction === "CKD Detected"
+          ? getStageSeverity(finalStage)
+          : "Normal";
+
+      const probability = Number(
+        fusionData.final_probability ??
+          fusionData.confidence ??
+          0
+      );
 
       setFinalResult({
+        ...fusionData,
         prediction: finalPrediction,
         stage: finalStage,
         severity: finalSeverity,
-        confidence: Number(finalProbability),
-        clinicalProbability: clinicalConfidence,
-        imageProbability,
-        fusionAvailable: Boolean(fusion),
-        timestamp: new Date().toLocaleString(),
+        confidence: probability,
       });
 
       setPage(3);
-      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
+      console.error(err);
+
       setError(
         err.message ||
-          "Unable to connect to the NephroPredictor backend."
+          "Something went wrong while generating the assessment."
       );
     } finally {
       setLoading(false);
@@ -260,35 +460,33 @@ function App() {
 
     setClinicalData(initialClinicalData);
 
+    setSelectedDemo("");
     setUltrasound(null);
     setPreview("");
 
     setClinicalResult(null);
     setFinalResult(null);
-
     setError("");
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const getStatusClass = (prediction) => {
     if (!prediction) return "neutral";
 
-    const value = prediction.toLowerCase();
+    const value = String(prediction).toLowerCase();
 
     if (
-      value.includes("detected") ||
-      value.includes("positive") ||
-      value.includes("ckd")
-    ) {
-      return "danger";
-    }
-
-    if (
+      value.includes("no ckd") ||
       value.includes("healthy") ||
       value.includes("negative")
     ) {
       return "success";
+    }
+
+    if (
+      value.includes("detected") ||
+      value.includes("positive")
+    ) {
+      return "danger";
     }
 
     return "neutral";
@@ -299,160 +497,840 @@ function App() {
 
     const value = String(severity).toLowerCase();
 
-    if (value.includes("high") || value.includes("severe")) {
+    if (
+      value.includes("kidney failure") ||
+      value.includes("severe")
+    ) {
       return "danger";
     }
 
-    if (
-      value.includes("moderate") ||
-      value.includes("medium")
-    ) {
+    if (value.includes("moderate")) {
       return "warning";
     }
 
-    if (value.includes("low") || value.includes("mild")) {
+    if (
+      value.includes("mild") ||
+      value.includes("normal")
+    ) {
       return "success";
     }
 
     return "neutral";
   };
 
-  const probability =
-    finalResult?.confidence != null
-      ? Math.max(
-          0,
-          Math.min(100, Number(finalResult.confidence))
+  const formatStage = (stage) => {
+    if (!stage) return "Not Applicable";
+
+    const value = String(stage);
+
+    if (
+      value.toLowerCase().startsWith("stage")
+    ) {
+      return value;
+    }
+
+    return `Stage ${value}`;
+  };
+
+  const generatePDFReport = () => {
+    if (!finalResult) return;
+
+    const doc = new jsPDF();
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    const margin = 18;
+
+    const prediction =
+      finalResult.prediction || "Not Available";
+
+    const stage =
+      prediction === "CKD Detected"
+        ? formatStage(finalResult.stage)
+        : "Not Applicable";
+
+    const severity =
+      finalResult.severity ||
+      (prediction === "CKD Detected"
+        ? getStageSeverity(finalResult.stage)
+        : "Normal");
+
+    const confidence = Number(
+      finalResult.final_probability ??
+        finalResult.confidence ??
+        0
+    );
+
+    const clinicalProbability = Number(
+      finalResult.clinical_probability ?? 0
+    );
+
+    const imageProbability = Number(
+      finalResult.image_probability ?? 0
+    );
+
+    const assessmentDate = new Date().toLocaleString(
+      "en-IN",
+      {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }
+    );
+
+    const addFooter = () => {
+      doc.setDrawColor(220, 225, 230);
+      doc.line(
+        margin,
+        pageHeight - 16,
+        pageWidth - margin,
+        pageHeight - 16
+      );
+
+      doc.setFontSize(8);
+      doc.setTextColor(120, 130, 140);
+
+      doc.text(
+        "NephroPredictor • AI-Assisted CKD Decision-Support Prototype",
+        margin,
+        pageHeight - 9
+      );
+
+      doc.text(
+        `Page ${doc.internal.getNumberOfPages()}`,
+        pageWidth - margin,
+        pageHeight - 9,
+        { align: "right" }
+      );
+    };
+
+    const sectionTitle = (title, y) => {
+      doc.setFontSize(13);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(20, 65, 100);
+
+      doc.text(title, margin, y);
+
+      doc.setDrawColor(210, 220, 228);
+      doc.line(
+        margin,
+        y + 3,
+        pageWidth - margin,
+        y + 3
+      );
+
+      return y + 13;
+    };
+
+    const addRow = (label, value, y) => {
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(70, 80, 90);
+
+      doc.text(label, margin, y);
+
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(30, 35, 40);
+
+      doc.text(
+        String(value ?? "Not available"),
+        margin + 58,
+        y
+      );
+
+      return y + 8;
+    };
+
+    // Header
+    doc.setFillColor(15, 75, 110);
+    doc.rect(0, 0, pageWidth, 34, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(21);
+
+    doc.text(
+      "NEPHROPREDICTOR",
+      margin,
+      14
+    );
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+
+    doc.text(
+      "CKD Early Detection & Clinical Decision Support",
+      margin,
+      23
+    );
+
+    doc.setFontSize(8);
+    doc.text(
+      "AI-ASSISTED ASSESSMENT REPORT",
+      pageWidth - margin,
+      18,
+      { align: "right" }
+    );
+
+    let y = 48;
+
+    // Patient information
+    y = sectionTitle(
+      "1. Patient Information",
+      y
+    );
+
+    y = addRow(
+      "Patient ID",
+      patient.patientId,
+      y
+    );
+
+    y = addRow(
+      "Patient Name",
+      patient.patientName,
+      y
+    );
+
+    y = addRow(
+      "Age",
+      `${patient.age} years`,
+      y
+    );
+
+    y = addRow(
+      "Gender",
+      patient.gender,
+      y
+    );
+
+    y = addRow(
+      "Assessment Date",
+      assessmentDate,
+      y
+    );
+
+    y += 5;
+
+    // Final assessment
+    y = sectionTitle(
+      "2. Final AI-Assisted Assessment",
+      y
+    );
+
+    doc.setFillColor(
+      prediction === "CKD Detected"
+        ? 255
+        : 239,
+      prediction === "CKD Detected"
+        ? 244
+        : 250,
+      prediction === "CKD Detected"
+        ? 244
+        : 245
+    );
+
+    doc.roundedRect(
+      margin,
+      y,
+      pageWidth - margin * 2,
+      42,
+      4,
+      4,
+      "F"
+    );
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(17);
+
+    doc.setTextColor(
+      prediction === "CKD Detected"
+        ? 180
+        : 25,
+      prediction === "CKD Detected"
+        ? 55
+        : 105,
+      prediction === "CKD Detected"
+        ? 55
+        : 75
+    );
+
+    doc.text(
+      prediction,
+      margin + 8,
+      y + 13
+    );
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(70, 80, 90);
+
+    doc.text(
+      `Stage: ${stage}`,
+      margin + 8,
+      y + 24
+    );
+
+    doc.text(
+      `Severity: ${severity}`,
+      margin + 8,
+      y + 32
+    );
+
+    doc.text(
+      `Model Confidence: ${confidence.toFixed(1)}%`,
+      pageWidth - margin - 8,
+      y + 24,
+      { align: "right" }
+    );
+
+    y += 54;
+
+    // Model assessment
+    y = sectionTitle(
+      "3. Model Assessment",
+      y
+    );
+
+    y = addRow(
+      "Clinical Model",
+      `${clinicalProbability.toFixed(1)}% CKD probability`,
+      y
+    );
+
+    y = addRow(
+      "Ultrasound Model",
+      `${imageProbability.toFixed(1)}% pathological probability`,
+      y
+    );
+
+    y = addRow(
+      "Fusion Method",
+      "Clinical + Ultrasound late fusion",
+      y
+    );
+
+    y = addRow(
+      "Clinical Weight",
+      "60%",
+      y
+    );
+
+    y = addRow(
+      "Ultrasound Weight",
+      "40%",
+      y
+    );
+
+    y += 5;
+
+    // Clinical parameters
+    y = sectionTitle(
+      "4. Clinical Parameters",
+      y
+    );
+
+    const clinicalLabels = {
+      serum_creatinine: "Serum Creatinine",
+      gfr: "GFR",
+      bun: "BUN",
+      serum_calcium: "Serum Calcium",
+      oxalate_levels: "Oxalate Levels",
+      urine_ph: "Urine pH",
+      blood_pressure: "Blood Pressure",
+      ana: "ANA",
+      c3_c4: "C3/C4",
+      hematuria: "Hematuria",
+      smoking: "Smoking",
+      alcohol: "Alcohol",
+      painkiller_usage: "Painkiller Usage",
+      family_history: "Family History",
+      physical_activity: "Physical Activity",
+      diet: "Diet",
+      water_intake: "Water Intake",
+      weight_changes: "Weight Changes",
+      stress_level: "Stress Level",
+      months: "Duration",
+    };
+
+    const entries = Object.entries(
+      clinicalData
+    );
+
+    let columnY = y;
+
+    entries.forEach(([key, value], index) => {
+      if (index === 10) {
+        columnY = y;
+
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(35, 40, 45);
+      }
+
+      const x =
+        index < 10
+          ? margin
+          : pageWidth / 2 + 4;
+
+      const rowIndex =
+        index < 10
+          ? index
+          : index - 10;
+
+      const currentY =
+        y + rowIndex * 7;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(80, 90, 100);
+
+      doc.text(
+        clinicalLabels[key] || key,
+        x,
+        currentY
+      );
+
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(30, 35, 40);
+
+      doc.text(
+        String(value),
+        x + 48,
+        currentY
+      );
+    });
+
+    y += 78;
+
+    // Stage overview
+    if (y > pageHeight - 80) {
+      doc.addPage();
+      addFooter();
+      y = 25;
+    }
+
+    y = sectionTitle(
+      "5. CKD Stage Overview",
+      y
+    );
+
+    const stages = [
+      ["Stage 1", "Mild"],
+      ["Stage 2", "Mild"],
+      ["Stage 3", "Moderate"],
+      ["Stage 4", "Severe"],
+      ["Stage 5", "Kidney Failure"],
+    ];
+
+    stages.forEach(([stageName, description], index) => {
+      const stageNumber = index + 1;
+
+      const currentStageNumber = Number(
+        String(finalResult.stage || "").replace(
+          /\D/g,
+          ""
         )
-      : 0;
+      );
+
+      const active =
+        prediction === "CKD Detected" &&
+        currentStageNumber === stageNumber;
+
+      if (active) {
+        doc.setFillColor(226, 242, 249);
+
+        doc.roundedRect(
+          margin,
+          y - 5,
+          pageWidth - margin * 2,
+          10,
+          2,
+          2,
+          "F"
+        );
+      }
+
+      doc.setFont(
+        "helvetica",
+        active ? "bold" : "normal"
+      );
+
+      doc.setFontSize(9);
+
+      doc.setTextColor(
+        active ? 15 : 70,
+        active ? 90 : 80,
+        active ? 120 : 90
+      );
+
+      doc.text(
+        stageName,
+        margin + 4,
+        y + 2
+      );
+
+      doc.text(
+        description,
+        margin + 55,
+        y + 2
+      );
+
+      if (active) {
+        doc.text(
+          "CURRENT",
+          pageWidth - margin - 4,
+          y + 2,
+          { align: "right" }
+        );
+      }
+
+      y += 11;
+    });
+
+    y += 5;
+
+    // AI summary
+    if (y > pageHeight - 80) {
+      doc.addPage();
+      addFooter();
+      y = 25;
+    }
+
+    y = sectionTitle(
+      "6. AI Analysis Summary",
+      y
+    );
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(50, 60, 70);
+
+    let summary;
+
+    if (prediction === "CKD Detected") {
+      summary =
+        `The integrated assessment identified a CKD prediction of "${prediction}" ` +
+        `with ${stage} classification and ${severity.toLowerCase()} severity. ` +
+        `The final confidence value reported by the fusion model is ` +
+        `${confidence.toFixed(1)}%. The assessment combines clinical-data ` +
+        `prediction with kidney ultrasound image analysis.`;
+    } else {
+      summary =
+        `The integrated assessment returned "${prediction}". ` +
+        `The final confidence value reported by the fusion model is ` +
+        `${confidence.toFixed(1)}%. The assessment combines clinical-data ` +
+        `prediction with kidney ultrasound image analysis.`;
+    }
+
+    const summaryLines = doc.splitTextToSize(
+      summary,
+      pageWidth - margin * 2
+    );
+
+    doc.text(
+      summaryLines,
+      margin,
+      y,
+      {
+        maxWidth: pageWidth - margin * 2,
+        lineHeightFactor: 1.5,
+      }
+    );
+
+    y +=
+      summaryLines.length * 6 + 12;
+
+    // Methodology
+    y = sectionTitle(
+      "7. System Methodology",
+      y
+    );
+
+    const methodology =
+      "Clinical data is processed using a Random Forest-based CKD model. " +
+      "Kidney ultrasound images are processed through U-Net-based kidney " +
+      "segmentation followed by image feature extraction and image classification. " +
+      "The clinical and ultrasound predictions are combined using late fusion.";
+
+    const methodologyLines =
+      doc.splitTextToSize(
+        methodology,
+        pageWidth - margin * 2
+      );
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(65, 75, 85);
+
+    doc.text(
+      methodologyLines,
+      margin,
+      y,
+      {
+        lineHeightFactor: 1.5,
+      }
+    );
+
+    y += methodologyLines.length * 5 + 10;
+
+    // Disclaimer
+    if (y > pageHeight - 65) {
+      doc.addPage();
+      addFooter();
+      y = 25;
+    }
+
+    doc.setFillColor(248, 250, 252);
+
+    doc.roundedRect(
+      margin,
+      y,
+      pageWidth - margin * 2,
+      35,
+      4,
+      4,
+      "F"
+    );
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(50, 65, 80);
+
+    doc.text(
+      "Important Notice",
+      margin + 7,
+      y + 10
+    );
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(80, 90, 100);
+
+    const disclaimer =
+      "This report is generated by an AI-assisted research prototype " +
+      "for clinical decision support. It is not a substitute for " +
+      "professional medical diagnosis, interpretation, or treatment.";
+
+    const disclaimerLines =
+      doc.splitTextToSize(
+        disclaimer,
+        pageWidth - margin * 2 - 14
+      );
+
+    doc.text(
+      disclaimerLines,
+      margin + 7,
+      y + 18,
+      {
+        lineHeightFactor: 1.4,
+      }
+    );
+
+    // Footer on all pages
+    const totalPages =
+      doc.internal.getNumberOfPages();
+
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      addFooter();
+    }
+
+    const safePatientId =
+      String(patient.patientId || "patient")
+        .replace(/[^a-z0-9_-]/gi, "_");
+
+    doc.save(
+      `NephroPredictor_Report_${safePatientId}.pdf`
+    );
+  };
+
+  const probability = Number(
+    finalResult?.final_probability ??
+      finalResult?.confidence ??
+      0
+  );
 
   return (
-    <div className="app">
+    <div className="app-shell">
 
-      {/* =====================================================
-          HEADER
-          ===================================================== */}
-
-      <header className="header">
+      {/* HEADER */}
+      <header className="app-header">
         <div className="header-content">
 
-          <div className="logo-icon">
-            NP
+          <div className="brand">
+            <div className="brand-logo">
+              NP
+            </div>
+
+            <div>
+              <h1>NephroPredictor</h1>
+
+              <p>
+                CKD Early Detection & Clinical
+                Decision Support
+              </p>
+            </div>
           </div>
 
-          <div>
-            <h1>NephroPredictor</h1>
-            <p>
-              AI-Assisted Chronic Kidney Disease Assessment
-            </p>
+          <div className="system-status">
+            <span className="status-dot" />
+            SYSTEM READY
           </div>
 
         </div>
       </header>
 
+      <main className="main-container">
 
-      <main className="container">
-
-        {/* ===================================================
-            WORKFLOW
-            =================================================== */}
-
-        <div className="workflow">
+        {/* WORKFLOW */}
+        <section className="workflow-bar">
 
           <div
             className={`workflow-step ${
-              page === 1 ? "active" : "completed"
+              page >= 1 ? "active" : ""
             }`}
           >
-            <span>1</span>
-            <p>Clinical Data</p>
+            <span>01</span>
+            <div>
+              <strong>Patient</strong>
+              <small>Clinical profile</small>
+            </div>
           </div>
 
-          <div
-            className={`workflow-line ${
-              page > 1 ? "completed" : ""
-            }`}
-          />
+          <div className="workflow-line" />
 
           <div
             className={`workflow-step ${
-              page === 2
-                ? "active"
-                : page > 2
-                ? "completed"
-                : ""
+              page >= 2 ? "active" : ""
             }`}
           >
-            <span>2</span>
-            <p>Ultrasound</p>
+            <span>02</span>
+            <div>
+              <strong>Ultrasound</strong>
+              <small>Image analysis</small>
+            </div>
           </div>
 
-          <div
-            className={`workflow-line ${
-              page > 2 ? "completed" : ""
-            }`}
-          />
+          <div className="workflow-line" />
 
           <div
             className={`workflow-step ${
-              page === 3 ? "active" : ""
+              page >= 3 ? "active" : ""
             }`}
           >
-            <span>3</span>
-            <p>Results Dashboard</p>
+            <span>03</span>
+            <div>
+              <strong>Assessment</strong>
+              <small>AI fusion results</small>
+            </div>
           </div>
 
-        </div>
-
-
-        {/* ===================================================
-            ERROR
-            =================================================== */}
+        </section>
 
         {error && (
-          <div className="error-card">
-            <strong>Attention</strong>
-            <p>{error}</p>
+          <div className="error-banner">
+            <strong>Attention:</strong> {error}
           </div>
         )}
 
-
-        {/* ===================================================
-            PAGE 1
-            =================================================== */}
-
+        {/* PAGE 1 */}
         {page === 1 && (
           <>
-            <section className="intro-card">
-              <div className="intro-icon">
-                +
-              </div>
+            <section className="hero-section">
 
               <div>
-                <h2>Patient & Clinical Assessment</h2>
+                <div className="eyebrow">
+                  AI-ASSISTED CLINICAL SCREENING
+                </div>
+
+                <h2>
+                  Integrated CKD
+                  <br />
+                  Early Detection
+                </h2>
 
                 <p>
-                  Enter the patient's demographic and clinical
-                  information to begin the CKD assessment.
-                  All required parameters should be completed
-                  before proceeding to ultrasound analysis.
+                  Combine clinical parameters and
+                  kidney ultrasound analysis into a
+                  unified AI-assisted assessment.
                 </p>
               </div>
+
+              <div className="hero-icon">
+                🩺
+              </div>
+
             </section>
 
-
-            <section className="form-card">
+            <section className="demo-section">
 
               <div className="section-heading">
                 <div>
-                  <h2>Patient Information</h2>
+                  <span className="section-kicker">
+                    TEST ENVIRONMENT
+                  </span>
+
+                  <h3>Demo Assessment Cases</h3>
+
                   <p>
-                    Basic patient identification details
+                    Select a predefined case to
+                    demonstrate the complete workflow.
                   </p>
                 </div>
 
-                <span>STEP 1 OF 3</span>
+                <select
+                  value={selectedDemo}
+                  onChange={handleDemoChange}
+                  className="demo-select"
+                >
+                  <option value="">
+                    Select Demo Case
+                  </option>
+
+                  <option value="No CKD">
+                    No CKD Demo Case
+                  </option>
+
+                  <option value="Stage 1">
+                    Stage 1 Demo Case
+                  </option>
+
+                  <option value="Stage 2">
+                    Stage 2 Demo Case
+                  </option>
+
+                  <option value="Stage 3">
+                    Stage 3 Demo Case
+                  </option>
+
+                  <option value="Stage 4">
+                    Stage 4 Demo Case
+                  </option>
+
+                  <option value="Stage 5">
+                    Stage 5 Demo Case
+                  </option>
+                </select>
               </div>
 
+            </section>
+
+            <section className="form-card">
+
+              <div className="card-heading">
+                <div>
+                  <span className="section-kicker">
+                    PATIENT RECORD
+                  </span>
+
+                  <h3>Patient Information</h3>
+                </div>
+
+                <span className="record-badge">
+                  PRIVATE RECORD
+                </span>
+              </div>
 
               <div className="form-grid">
 
@@ -463,10 +1341,9 @@ function App() {
                     name="patientId"
                     value={patient.patientId}
                     onChange={handlePatientChange}
-                    placeholder="Enter patient ID"
+                    placeholder="e.g. NP-2026-001"
                   />
                 </div>
-
 
                 <div className="field">
                   <label>Patient Name</label>
@@ -479,21 +1356,17 @@ function App() {
                   />
                 </div>
 
-
                 <div className="field">
                   <label>Age</label>
 
                   <input
                     type="number"
                     name="age"
-                    min="0"
-                    max="120"
                     value={patient.age}
                     onChange={handlePatientChange}
-                    placeholder="Age"
+                    placeholder="Years"
                   />
                 </div>
-
 
                 <div className="field">
                   <label>Gender</label>
@@ -507,12 +1380,12 @@ function App() {
                       Select gender
                     </option>
 
-                    <option value="Male">
-                      Male
-                    </option>
-
                     <option value="Female">
                       Female
+                    </option>
+
+                    <option value="Male">
+                      Male
                     </option>
 
                     <option value="Other">
@@ -523,489 +1396,372 @@ function App() {
 
               </div>
 
-
-              <div className="section-heading clinical-heading">
-
-                <div>
-                  <h2>Clinical Parameters</h2>
-
-                  <p>
-                    Enter the patient's clinical assessment
-                    values.
-                  </p>
-                </div>
-
-                <span>20 PARAMETERS</span>
-
-              </div>
-
-
-              <div className="form-grid">
-
-                <ClinicalField
-                  label="Serum Creatinine"
-                  name="serum_creatinine"
-                  value={clinicalData.serum_creatinine}
-                  onChange={handleClinicalChange}
-                  placeholder="e.g. 1.2"
-                />
-
-                <ClinicalField
-                  label="GFR"
-                  name="gfr"
-                  value={clinicalData.gfr}
-                  onChange={handleClinicalChange}
-                  placeholder="e.g. 60"
-                />
-
-                <ClinicalField
-                  label="BUN"
-                  name="bun"
-                  value={clinicalData.bun}
-                  onChange={handleClinicalChange}
-                  placeholder="e.g. 25"
-                />
-
-                <ClinicalField
-                  label="Serum Calcium"
-                  name="serum_calcium"
-                  value={clinicalData.serum_calcium}
-                  onChange={handleClinicalChange}
-                  placeholder="Enter value"
-                />
-
-                <ClinicalField
-                  label="Oxalate Levels"
-                  name="oxalate_levels"
-                  value={clinicalData.oxalate_levels}
-                  onChange={handleClinicalChange}
-                  placeholder="Enter value"
-                />
-
-                <ClinicalField
-                  label="Urine pH"
-                  name="urine_ph"
-                  value={clinicalData.urine_ph}
-                  onChange={handleClinicalChange}
-                  placeholder="0 - 14"
-                />
-
-                <ClinicalField
-                  label="Blood Pressure"
-                  name="blood_pressure"
-                  value={clinicalData.blood_pressure}
-                  onChange={handleClinicalChange}
-                  placeholder="e.g. 120"
-                />
-
-                <ClinicalField
-                  label="ANA"
-                  name="ana"
-                  value={clinicalData.ana}
-                  onChange={handleClinicalChange}
-                  placeholder="Enter value"
-                />
-
-                <ClinicalField
-                  label="C3 / C4"
-                  name="c3_c4"
-                  value={clinicalData.c3_c4}
-                  onChange={handleClinicalChange}
-                  placeholder="Enter value"
-                />
-
-                <ClinicalField
-                  label="Hematuria"
-                  name="hematuria"
-                  value={clinicalData.hematuria}
-                  onChange={handleClinicalChange}
-                  placeholder="0 / 1"
-                />
-
-                <ClinicalField
-                  label="Smoking"
-                  name="smoking"
-                  value={clinicalData.smoking}
-                  onChange={handleClinicalChange}
-                  placeholder="0 / 1"
-                />
-
-                <ClinicalField
-                  label="Alcohol"
-                  name="alcohol"
-                  value={clinicalData.alcohol}
-                  onChange={handleClinicalChange}
-                  placeholder="0 / 1"
-                />
-
-                <ClinicalField
-                  label="Painkiller Usage"
-                  name="painkiller_usage"
-                  value={clinicalData.painkiller_usage}
-                  onChange={handleClinicalChange}
-                  placeholder="0 / 1"
-                />
-
-                <ClinicalField
-                  label="Family History"
-                  name="family_history"
-                  value={clinicalData.family_history}
-                  onChange={handleClinicalChange}
-                  placeholder="0 / 1"
-                />
-
-                <ClinicalField
-                  label="Physical Activity"
-                  name="physical_activity"
-                  value={clinicalData.physical_activity}
-                  onChange={handleClinicalChange}
-                  placeholder="Enter value"
-                />
-
-                <ClinicalField
-                  label="Diet"
-                  name="diet"
-                  value={clinicalData.diet}
-                  onChange={handleClinicalChange}
-                  placeholder="Enter value"
-                />
-
-                <ClinicalField
-                  label="Water Intake"
-                  name="water_intake"
-                  value={clinicalData.water_intake}
-                  onChange={handleClinicalChange}
-                  placeholder="Enter value"
-                />
-
-                <ClinicalField
-                  label="Weight Changes"
-                  name="weight_changes"
-                  value={clinicalData.weight_changes}
-                  onChange={handleClinicalChange}
-                  placeholder="Enter value"
-                />
-
-                <ClinicalField
-                  label="Stress Level"
-                  name="stress_level"
-                  value={clinicalData.stress_level}
-                  onChange={handleClinicalChange}
-                  placeholder="Enter value"
-                />
-
-                <ClinicalField
-                  label="Duration (Months)"
-                  name="months"
-                  value={clinicalData.months}
-                  onChange={handleClinicalChange}
-                  placeholder="Months"
-                />
-
-              </div>
-
-
-              <div className="button-row">
-
-                <button
-                  className="predict-button"
-                  onClick={goToUltrasound}
-                >
-                  Continue to Ultrasound
-                  <span> →</span>
-                </button>
-
-              </div>
-
-
-              <div className="research-note">
-
-                <strong>
-                  Clinical Decision-Support System
-                </strong>
-
-                <p>
-                  NephroPredictor is an AI-assisted research
-                  and decision-support application. Results
-                  should be reviewed by a qualified healthcare
-                  professional.
-                </p>
-
-              </div>
-
-            </section>
-          </>
-        )}
-
-
-        {/* ===================================================
-            PAGE 2
-            =================================================== */}
-
-        {page === 2 && (
-          <>
-            <section className="intro-card">
-              <div className="intro-icon">
-                US
-              </div>
-
-              <div>
-                <h2>Kidney Ultrasound Analysis</h2>
-
-                <p>
-                  Upload the patient's kidney ultrasound image
-                  for image-based analysis and integration with
-                  the clinical assessment.
-                </p>
-              </div>
             </section>
 
+            <section className="form-card">
 
-            <section className="image-card">
-
-              <div className="section-heading">
-
+              <div className="card-heading">
                 <div>
-                  <h2>Ultrasound Image</h2>
-
-                  <p>
-                    Upload a supported kidney ultrasound image.
-                  </p>
-                </div>
-
-                <span>STEP 2 OF 3</span>
-
-              </div>
-
-
-              <div className="patient-summary">
-
-                <div>
-                  <span>Patient ID</span>
-                  <strong>{patient.patientId}</strong>
-                </div>
-
-                <div>
-                  <span>Patient</span>
-                  <strong>{patient.patientName}</strong>
-                </div>
-
-                <div>
-                  <span>Age</span>
-                  <strong>{patient.age}</strong>
-                </div>
-
-                <div>
-                  <span>Gender</span>
-                  <strong>{patient.gender}</strong>
-                </div>
-
-              </div>
-
-
-              <div className="upload-area">
-
-                <div className="upload-icon">
-                  ↑
-                </div>
-
-                <h3>
-                  Upload Kidney Ultrasound
-                </h3>
-
-                <p>
-                  JPG, JPEG or PNG image
-                </p>
-
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/jpg"
-                  onChange={handleImageChange}
-                />
-
-              </div>
-
-
-              {preview && (
-                <div className="image-preview">
+                  <span className="section-kicker">
+                    CLINICAL INPUTS
+                  </span>
 
                   <h3>
-                    Selected Ultrasound
+                    Clinical Assessment
                   </h3>
-
-                  <img
-                    src={preview}
-                    alt="Selected kidney ultrasound"
-                  />
-
-                  <p className="file-name">
-                    {ultrasound?.name}
-                  </p>
-
                 </div>
-              )}
-
-
-              <div className="analysis-info">
-
-                <h3>
-                  Analysis Pipeline
-                </h3>
-
-                <div className="analysis-steps">
-
-                  <div>
-                    <span>1</span>
-                    <p>
-                      U-Net Kidney Segmentation
-                    </p>
-                  </div>
-
-                  <div>
-                    <span>2</span>
-                    <p>
-                      Image Feature Extraction
-                    </p>
-                  </div>
-
-                  <div>
-                    <span>3</span>
-                    <p>
-                      Image Classification
-                    </p>
-                  </div>
-
-                  <div>
-                    <span>4</span>
-                    <p>
-                      Clinical + Image Fusion
-                    </p>
-                  </div>
-
-                </div>
-
-                <p className="analysis-note">
-                  The ultrasound model processes the image
-                  independently and the final system can
-                  combine image and clinical predictions.
-                </p>
-
               </div>
 
+              <div className="clinical-grid">
 
-              <div className="button-row">
-
-                <button
-                  className="clear-button"
-                  onClick={() => {
-                    setPage(1);
-                    setError("");
-                  }}
-                >
-                  ← Back
-                </button>
-
-                <button
-                  className="predict-button"
-                  disabled={!ultrasound || loading}
-                  onClick={generateResults}
-                >
-                  {loading
-                    ? "Analyzing Patient..."
-                    : "Generate Results →"}
-                </button>
+                {Object.entries(clinicalData).map(
+                  ([key, value]) => (
+                    <ClinicalField
+                      key={key}
+                      name={key}
+                      value={value}
+                      onChange={handleClinicalChange}
+                    />
+                  )
+                )}
 
               </div>
 
             </section>
+
+            <div className="bottom-action">
+
+              <div className="decision-note">
+                <span>●</span>
+
+                <div>
+                  <strong>
+                    AI-assisted decision support
+                  </strong>
+
+                  <small>
+                    Clinical inputs will be combined
+                    with ultrasound analysis.
+                  </small>
+                </div>
+              </div>
+
+              <button
+                className="primary-button"
+                onClick={() => {
+                  if (validatePageOne()) {
+                    setPage(2);
+                  }
+                }}
+              >
+                Continue to Ultrasound
+                <span>→</span>
+              </button>
+
+            </div>
           </>
         )}
 
-
-        {/* ===================================================
-            PAGE 3
-            =================================================== */}
-
-        {page === 3 && finalResult && (
+        {/* PAGE 2 */}
+        {page === 2 && (
           <>
-            <section className="dashboard-header">
+            <section className="page-title">
 
               <div>
-
-                <span className="dashboard-label">
-                  RESULTS DASHBOARD
+                <span className="section-kicker">
+                  STEP 02 OF 03
                 </span>
 
                 <h2>
-                  Patient Results Dashboard
+                  Kidney Ultrasound Analysis
                 </h2>
 
                 <p>
-                  AI-assisted CKD assessment summary
+                  Upload the kidney ultrasound image
+                  for AI-based image analysis and
+                  clinical fusion.
                 </p>
+              </div>
+
+              <div className="patient-mini-card">
+                <strong>
+                  {patient.patientName}
+                </strong>
+
+                <span>
+                  {patient.patientId}
+                </span>
+              </div>
+
+            </section>
+
+            <section className="upload-layout">
+
+              <div className="upload-card">
+
+                {!preview ? (
+                  <label className="upload-zone">
+
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg"
+                      onChange={handleImageChange}
+                    />
+
+                    <div className="upload-icon">
+                      ↑
+                    </div>
+
+                    <h3>
+                      Upload Ultrasound Image
+                    </h3>
+
+                    <p>
+                      Drag and drop or click to browse
+                    </p>
+
+                    <span>
+                      JPG, JPEG or PNG
+                    </span>
+
+                  </label>
+                ) : (
+                  <div className="image-preview-container">
+
+                    <img
+                      src={preview}
+                      alt="Uploaded kidney ultrasound"
+                      className="ultrasound-preview"
+                    />
+
+                    <div className="image-info">
+
+                      <div>
+                        <strong>
+                          {ultrasound?.name}
+                        </strong>
+
+                        <span>
+                          {(
+                            ultrasound?.size /
+                            1024 /
+                            1024
+                          ).toFixed(2)}{" "}
+                          MB
+                        </span>
+                      </div>
+
+                      <label className="change-image">
+                        Change Image
+
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg"
+                          onChange={handleImageChange}
+                        />
+                      </label>
+
+                    </div>
+
+                  </div>
+                )}
 
               </div>
 
+              <div className="analysis-pipeline">
+
+                <div className="pipeline-heading">
+                  <span className="section-kicker">
+                    AI PIPELINE
+                  </span>
+
+                  <h3>
+                    Image Processing Workflow
+                  </h3>
+                </div>
+
+                <PipelineStep
+                  number="01"
+                  title="Ultrasound Upload"
+                  text="Input kidney ultrasound image"
+                />
+
+                <PipelineArrow />
+
+                <PipelineStep
+                  number="02"
+                  title="U-Net Segmentation"
+                  text="Identify kidney region of interest"
+                />
+
+                <PipelineArrow />
+
+                <PipelineStep
+                  number="03"
+                  title="Feature Extraction"
+                  text="Extract image-based kidney features"
+                />
+
+                <PipelineArrow />
+
+                <PipelineStep
+                  number="04"
+                  title="Image Classification"
+                  text="Estimate pathological probability"
+                />
+
+                <PipelineArrow />
+
+                <PipelineStep
+                  number="05"
+                  title="Clinical + Image Fusion"
+                  text="Combine both assessment streams"
+                />
+
+              </div>
+
+            </section>
+
+            <section className="info-strip">
+
+              <div>
+                <strong>
+                  Clinical model
+                </strong>
+
+                <span>
+                  Random Forest
+                </span>
+              </div>
+
+              <div>
+                <strong>
+                  Image segmentation
+                </strong>
+
+                <span>
+                  U-Net
+                </span>
+              </div>
+
+              <div>
+                <strong>
+                  Image classification
+                </strong>
+
+                <span>
+                  Random Forest / XGBoost
+                </span>
+              </div>
+
+              <div>
+                <strong>
+                  Final assessment
+                </strong>
+
+                <span>
+                  Late Fusion
+                </span>
+              </div>
+
+            </section>
+
+            <div className="bottom-action">
 
               <button
-                className="new-assessment-button"
-                onClick={startNewAssessment}
+                className="secondary-button"
+                onClick={() => setPage(1)}
               >
-                + New Assessment
+                ← Back
               </button>
 
-            </section>
+              <button
+                className="primary-button"
+                onClick={generateResults}
+                disabled={loading}
+              >
+                {loading
+                  ? "Analyzing..."
+                  : "Generate Assessment"}
+                {!loading && <span>→</span>}
+              </button>
 
+            </div>
+          </>
+        )}
 
-            {/* PATIENT INFORMATION */}
+        {/* PAGE 3 */}
+        {page === 3 && finalResult && (
+          <>
+            <section className="page-title results-title">
 
-            <section className="dashboard-card">
-
-              <div className="dashboard-card-header">
-
-                <h3>
-                  Patient Information
-                </h3>
-
-                <span className="model-tag">
-                  PATIENT RECORD
+              <div>
+                <span className="section-kicker">
+                  FINAL ASSESSMENT
                 </span>
 
+                <h2>
+                  Clinical Decision Dashboard
+                </h2>
+
+                <p>
+                  Integrated clinical and ultrasound
+                  assessment for {patient.patientName}.
+                </p>
               </div>
 
+              <div className="results-actions">
 
-              <div className="patient-summary">
+                <button
+                  className="pdf-button"
+                  onClick={generatePDFReport}
+                >
+                  <span>▣</span>
+                  Generate Clinical Report
+                </button>
 
-                <div>
-                  <span>Patient ID</span>
-                  <strong>{patient.patientId}</strong>
-                </div>
-
-                <div>
-                  <span>Name</span>
-                  <strong>{patient.patientName}</strong>
-                </div>
-
-                <div>
-                  <span>Age</span>
-                  <strong>{patient.age} years</strong>
-                </div>
-
-                <div>
-                  <span>Gender</span>
-                  <strong>{patient.gender}</strong>
-                </div>
+                <button
+                  className="secondary-button"
+                  onClick={startNewAssessment}
+                >
+                  New Assessment
+                </button>
 
               </div>
-
-              <p className="assessment-time">
-                Assessment generated: {finalResult.timestamp}
-              </p>
 
             </section>
 
+            <section className="patient-summary-card">
 
-            {/* FOUR MAIN PARAMETERS */}
+              <div>
+                <span>Patient ID</span>
+                <strong>
+                  {patient.patientId}
+                </strong>
+              </div>
+
+              <div>
+                <span>Patient Name</span>
+                <strong>
+                  {patient.patientName}
+                </strong>
+              </div>
+
+              <div>
+                <span>Age</span>
+                <strong>
+                  {patient.age} years
+                </strong>
+              </div>
+
+              <div>
+                <span>Gender</span>
+                <strong>
+                  {patient.gender}
+                </strong>
+              </div>
+
+            </section>
 
             <section className="dashboard-result-grid">
 
@@ -1019,18 +1775,17 @@ function App() {
 
               <ResultCard
                 title="CKD Stage"
-                value={
+                value={formatStage(
                   finalResult.stage
-                    ? `Stage ${finalResult.stage}`
-                    : "Not Applicable"
-                }
+                )}
                 className="blue"
               />
 
               <ResultCard
                 title="Severity"
                 value={
-                  finalResult.severity || "Not Available"
+                  finalResult.severity ||
+                  "Not Available"
                 }
                 className={getSeverityClass(
                   finalResult.severity
@@ -1045,343 +1800,256 @@ function App() {
 
             </section>
 
+            <section className="result-analysis-grid">
 
-            {/* CONFIDENCE VISUALIZATION */}
+              <div className="result-card-large">
 
-            <section className="dashboard-card">
+                <div className="card-heading">
 
-              <div className="dashboard-card-header">
-
-                <div>
-                  <h3>
-                    Assessment Confidence
-                  </h3>
-
-                  <p className="card-subtitle">
-                    Combined prediction probability
-                  </p>
-                </div>
-
-                <span className="model-tag">
-                  AI ANALYSIS
-                </span>
-
-              </div>
-
-
-              <div className="confidence-layout">
-
-                <div
-                  className="confidence-circle"
-                  style={{
-                    "--confidence": `${probability}%`,
-                  }}
-                >
                   <div>
-                    <strong>
-                      {probability.toFixed(1)}%
-                    </strong>
-
-                    <span>
-                      Confidence
+                    <span className="section-kicker">
+                      INTEGRATED RESULT
                     </span>
+
+                    <h3>
+                      AI Fusion Assessment
+                    </h3>
                   </div>
+
+                  <span className="fusion-badge">
+                    FUSION COMPLETE
+                  </span>
+
                 </div>
 
+                <div className="fusion-visual">
 
-                <div className="confidence-info">
-
-                  <div className="metric-line">
-
+                  <div
+  className="confidence-ring"
+  style={{
+    "--confidence": Math.min(probability, 100),
+  }}
+>
                     <div>
-                      <span>
-                        Clinical Model
-                      </span>
-
                       <strong>
-                        {Number(
-                          finalResult.clinicalProbability
-                        ).toFixed(1)}
-                        %
+                        {probability.toFixed(1)}%
                       </strong>
-                    </div>
 
-                    <div className="progress">
-                      <div
-                        style={{
-                          width: `${Math.min(
-                            100,
-                            Math.max(
-                              0,
-                              Number(
-                                finalResult.clinicalProbability
-                              )
-                            )
-                          )}%`,
-                        }}
-                      />
-                    </div>
-
-                  </div>
-
-
-                  <div className="metric-line">
-
-                    <div>
                       <span>
-                        Ultrasound Model
+                        Confidence
                       </span>
-
-                      <strong>
-                        {finalResult.imageProbability !== null
-                          ? `${Number(
-                              finalResult.imageProbability
-                            ).toFixed(1)}%`
-                          : "Unavailable"}
-                      </strong>
                     </div>
-
-                    <div className="progress image-progress">
-                      <div
-                        style={{
-                          width:
-                            finalResult.imageProbability !==
-                            null
-                              ? `${Math.min(
-                                  100,
-                                  Math.max(
-                                    0,
-                                    Number(
-                                      finalResult.imageProbability
-                                    )
-                                  )
-                                )}%`
-                              : "0%",
-                        }}
-                      />
-                    </div>
-
                   </div>
 
-                </div>
+                  <div className="fusion-details">
 
-              </div>
+                    <div className="model-row">
 
-            </section>
+                      <div>
+                        <span>
+                          Clinical Model
+                        </span>
 
-
-            {/* MODEL RESULTS */}
-
-            <section className="dashboard-card">
-
-              <div className="dashboard-card-header">
-
-                <div>
-                  <h3>
-                    Model Assessment
-                  </h3>
-
-                  <p className="card-subtitle">
-                    Individual model outputs
-                  </p>
-                </div>
-
-              </div>
-
-
-              <div className="model-result-grid">
-
-                <div className="model-result clinical-model">
-
-                  <div className="model-icon">
-                    C
-                  </div>
-
-                  <div>
-                    <span>
-                      Clinical Analysis
-                    </span>
-
-                    <strong>
-                      {clinicalResult?.prediction ||
-                        finalResult.prediction}
-                    </strong>
-
-                    <small>
-                      Random Forest clinical model
-                    </small>
-                  </div>
-
-                </div>
-
-
-                <div className="model-result ultrasound-model">
-
-                  <div className="model-icon">
-                    U
-                  </div>
-
-                  <div>
-                    <span>
-                      Ultrasound Analysis
-                    </span>
-
-                    <strong>
-                      {finalResult.fusionAvailable
-                        ? "Analyzed"
-                        : "Pending"}
-                    </strong>
-
-                    <small>
-                      U-Net + image classifier
-                    </small>
-                  </div>
-
-                </div>
-
-              </div>
-
-            </section>
-
-
-            {/* STAGE VISUALIZATION */}
-
-            <section className="dashboard-card">
-
-              <div className="dashboard-card-header">
-
-                <div>
-                  <h3>
-                    CKD Stage Overview
-                  </h3>
-
-                  <p className="card-subtitle">
-                    Five-stage clinical classification
-                  </p>
-                </div>
-
-              </div>
-
-
-              <div className="stage-chart">
-
-                {[1, 2, 3, 4, 5].map((stage) => {
-
-                  const currentStage =
-                    Number(finalResult.stage);
-
-                  const active =
-                    currentStage === stage;
-
-                  return (
-                    <div
-                      className={`stage-item ${
-                        active ? "active" : ""
-                      }`}
-                      key={stage}
-                    >
-
-                      <div className="stage-bar">
-                        <span />
+                        <strong>
+                          {Number(
+                            finalResult.clinical_probability ??
+                              0
+                          ).toFixed(1)}
+                          %
+                        </strong>
                       </div>
 
-                      <strong>
-                        Stage {stage}
-                      </strong>
-
-                      <small>
-                        {stage === 1 &&
-                          "Mild / Normal"}
-                        {stage === 2 &&
-                          "Mild Reduction"}
-                        {stage === 3 &&
-                          "Moderate"}
-                        {stage === 4 &&
-                          "Severe"}
-                        {stage === 5 &&
-                          "Kidney Failure"}
-                      </small>
+                      <div className="model-bar">
+                        <span
+                          style={{
+                            width: `${Math.min(
+                              Number(
+                                finalResult.clinical_probability ??
+                                  0
+                              ),
+                              100
+                            )}%`,
+                          }}
+                        />
+                      </div>
 
                     </div>
-                  );
-                })}
+
+                    <div className="model-row">
+
+                      <div>
+                        <span>
+                          Ultrasound Model
+                        </span>
+
+                        <strong>
+                          {Number(
+                            finalResult.image_probability ??
+                              0
+                          ).toFixed(1)}
+                          %
+                        </strong>
+                      </div>
+
+                      <div className="model-bar">
+                        <span
+                          style={{
+                            width: `${Math.min(
+                              Number(
+                                finalResult.image_probability ??
+                                  0
+                              ),
+                              100
+                            )}%`,
+                          }}
+                        />
+                      </div>
+
+                    </div>
+
+                    <div className="fusion-equation">
+                      <span>60% Clinical</span>
+                      <strong>+</strong>
+                      <span>40% Ultrasound</span>
+                      <strong>=</strong>
+                      <span>Final Fusion</span>
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div className="result-card-large stage-card">
+
+                <div className="card-heading">
+
+                  <div>
+                    <span className="section-kicker">
+                      DISEASE PROGRESSION
+                    </span>
+
+                    <h3>
+                      CKD Stage Overview
+                    </h3>
+                  </div>
+
+                </div>
+
+                <div className="stage-list">
+
+                  {[1, 2, 3, 4, 5].map(
+                    (stage) => {
+
+                      const currentStage =
+                        Number(
+                          String(
+                            finalResult.stage || ""
+                          ).replace(/\D/g, "")
+                        );
+
+                      const active =
+                        currentStage === stage;
+
+                      return (
+                        <div
+                          className={`stage-item ${
+                            active
+                              ? "active"
+                              : ""
+                          }`}
+                          key={stage}
+                        >
+
+                          <div className="stage-bar">
+                            <span />
+                          </div>
+
+                          <strong>
+                            Stage {stage}
+                          </strong>
+
+                          <small>
+                            {stage === 1 &&
+                              "Mild / Normal"}
+
+                            {stage === 2 &&
+                              "Mild Reduction"}
+
+                            {stage === 3 &&
+                              "Moderate"}
+
+                            {stage === 4 &&
+                              "Severe"}
+
+                            {stage === 5 &&
+                              "Kidney Failure"}
+                          </small>
+
+                        </div>
+                      );
+                    }
+                  )}
+
+                </div>
 
               </div>
 
             </section>
 
+            <section className="final-assessment-card">
 
-            {/* FINAL ASSESSMENT */}
-
-            <section className="final-assessment">
+              <div className="assessment-icon">
+                ✓
+              </div>
 
               <div>
 
-                <span>
-                  FINAL AI-ASSISTED ASSESSMENT
+                <span className="section-kicker">
+                  AI ANALYSIS SUMMARY
                 </span>
 
-                <h2>
+                <h3>
                   {finalResult.prediction}
-                </h2>
+                </h3>
 
                 <p>
-                  The result combines available clinical
-                  information and ultrasound analysis.
-                  This output is intended to support,
-                  not replace, professional clinical
-                  evaluation.
+                  {finalResult.prediction ===
+                  "CKD Detected"
+                    ? `The integrated assessment indicates ${formatStage(
+                        finalResult.stage
+                      )} classification with ${finalResult.severity?.toLowerCase()}. The final model confidence is ${probability.toFixed(
+                        1
+                      )}%.`
+                    : `The integrated assessment returned ${finalResult.prediction} with a final model confidence of ${probability.toFixed(
+                        1
+                      )}%.`}
                 </p>
 
-              </div>
-
-
-              <div className="final-status">
-
-                <span>
-                  CURRENT STATUS
-                </span>
-
-                <strong>
-                  {finalResult.prediction}
-                </strong>
+                <small>
+                  This is an AI-assisted decision
+                  support result and should be
+                  interpreted alongside appropriate
+                  clinical evaluation.
+                </small>
 
               </div>
 
             </section>
 
-
-            {/* DISCLAIMER */}
-
-            <div className="dashboard-disclaimer">
-
-              <strong>
-                Clinical Decision-Support Notice
-              </strong>
-
-              <p>
-                NephroPredictor is an AI-assisted research
-                and decision-support system. Results should
-                be interpreted by a qualified healthcare
-                professional together with the patient's
-                clinical history, laboratory findings and
-                imaging.
-              </p>
-
-            </div>
-
-
-            <div className="dashboard-actions">
+            <div className="report-bottom-actions">
 
               <button
-                className="clear-button"
-                onClick={() => setPage(2)}
+                className="pdf-button large"
+                onClick={generatePDFReport}
               >
-                ← Review Ultrasound
+                <span>▣</span>
+                Generate Clinical Report PDF
               </button>
 
               <button
-                className="predict-button"
+                className="secondary-button"
                 onClick={startNewAssessment}
               >
                 Start New Assessment
@@ -1394,31 +2062,61 @@ function App() {
 
       </main>
 
+      <footer className="app-footer">
 
-      <footer className="footer">
-        NephroPredictor • AI-Assisted CKD Decision Support
-        System
+        <span>
+          NephroPredictor
+        </span>
+
+        <span>
+          AI-Assisted CKD Decision-Support
+          Prototype
+        </span>
+
       </footer>
 
     </div>
   );
 }
 
-
-/* =========================================================
-   CLINICAL FIELD COMPONENT
-   ========================================================= */
+/* ----------------------------- */
+/* Clinical Field */
+/* ----------------------------- */
 
 function ClinicalField({
-  label,
   name,
   value,
   onChange,
-  placeholder,
 }) {
+  const labels = {
+    serum_creatinine: "Serum Creatinine",
+    gfr: "GFR",
+    bun: "BUN",
+    serum_calcium: "Serum Calcium",
+    oxalate_levels: "Oxalate Levels",
+    urine_ph: "Urine pH",
+    blood_pressure: "Blood Pressure",
+    ana: "ANA",
+    c3_c4: "C3 / C4",
+    hematuria: "Hematuria",
+    smoking: "Smoking",
+    alcohol: "Alcohol",
+    painkiller_usage: "Painkiller Usage",
+    family_history: "Family History",
+    physical_activity: "Physical Activity",
+    diet: "Diet",
+    water_intake: "Water Intake",
+    weight_changes: "Weight Changes",
+    stress_level: "Stress Level",
+    months: "Duration (Months)",
+  };
+
   return (
     <div className="field">
-      <label>{label}</label>
+
+      <label>
+        {labels[name] || name}
+      </label>
 
       <input
         type="number"
@@ -1426,16 +2124,16 @@ function ClinicalField({
         name={name}
         value={value}
         onChange={onChange}
-        placeholder={placeholder}
+        placeholder="Enter value"
       />
+
     </div>
   );
 }
 
-
-/* =========================================================
-   RESULT CARD
-   ========================================================= */
+/* ----------------------------- */
+/* Result Card */
+/* ----------------------------- */
 
 function ResultCard({
   title,
@@ -1443,12 +2141,50 @@ function ResultCard({
   className,
 }) {
   return (
-    <div className={`result-card ${className}`}>
-
+    <div
+      className={`result-card ${className}`}
+    >
       <span>{title}</span>
 
       <strong>{value}</strong>
+    </div>
+  );
+}
 
+/* ----------------------------- */
+/* Pipeline Step */
+/* ----------------------------- */
+
+function PipelineStep({
+  number,
+  title,
+  text,
+}) {
+  return (
+    <div className="pipeline-step">
+
+      <div className="pipeline-number">
+        {number}
+      </div>
+
+      <div>
+        <strong>{title}</strong>
+
+        <small>{text}</small>
+      </div>
+
+    </div>
+  );
+}
+
+/* ----------------------------- */
+/* Pipeline Arrow */
+/* ----------------------------- */
+
+function PipelineArrow() {
+  return (
+    <div className="pipeline-arrow">
+      ↓
     </div>
   );
 }

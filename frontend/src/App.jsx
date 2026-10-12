@@ -1,9 +1,44 @@
 
 import React, { useState } from "react";
 import { jsPDF } from "jspdf";
+import * as XLSX from "xlsx";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import "./App.css";
 
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+
 const API_URL = "http://127.0.0.1:8001";
+
+const performanceMetrics = [
+  {
+    name: "SVM",
+    type: "Baseline Model",
+    accuracy: 87.08,
+    precision: 86.67,
+    recall: 85.71,
+    f1: 86.19,
+    auc: 95.07,
+  },
+  {
+    name: "XGBoost",
+    type: "Boosting Model",
+    accuracy: 99.79,
+    precision: 99.80,
+    recall: 99.78,
+    f1: 99.79,
+    auc: 100.00,
+  },
+  {
+    name: "Random Forest",
+    type: "Proposed Model",
+    accuracy: 99.93,
+    precision: 100.00,
+    recall: 99.86,
+    f1: 99.93,
+    auc: 99.99,
+  },
+];
 
 const initialClinicalData = {
   serum_creatinine: "",
@@ -228,7 +263,9 @@ function App() {
   });
 
   const [clinicalData, setClinicalData] = useState(initialClinicalData);
-
+  // Clinical report upload
+const [reportFile, setReportFile] = useState(null);
+const [reportLoading, setReportLoading] = useState(false);
   const [selectedDemo, setSelectedDemo] = useState("");
 
   const [ultrasound, setUltrasound] = useState(null);
@@ -272,6 +309,723 @@ function App() {
       [name]: value,
     }));
   };
+  
+const clinicalReportAliases = {
+  serum_creatinine: [
+  "serum creatinine",
+  "creatinine",
+  "s creatinine",
+  "serum creat",
+  "creatinine serum",
+],
+
+gfr: [
+  "egfr",
+  "estimated gfr",
+  "glomerular filtration rate",
+  "gfr",
+  "e gfr",
+],
+
+bun: [
+  "bun",
+  "blood urea nitrogen",
+  "blood urea",
+  "urea",
+  "serum urea",
+],
+  serum_calcium: ["serum calcium", "calcium"],
+  oxalate_levels: ["oxalate", "oxalate levels"],
+  urine_ph: ["urine ph", "urinary ph"],
+  blood_pressure: ["blood pressure", "bp"],
+  ana: ["ana", "antinuclear antibody"],
+  c3_c4: ["c3/c4", "c3 c4", "complement c3", "complement c4"],
+  hematuria: ["hematuria", "haematuria", "blood in urine"],
+  smoking: ["smoking", "smoking history"],
+  alcohol: ["alcohol", "alcohol use"],
+  painkiller_usage: ["painkiller usage", "painkiller", "analgesic use"],
+  family_history: ["family history", "family history of ckd"],
+  physical_activity: ["physical activity", "activity level"],
+  diet: ["diet", "diet type"],
+  water_intake: ["water intake", "daily water intake"],
+  weight_changes: ["weight changes", "weight change"],
+  stress_level: ["stress level", "stress"],
+  months: ["months", "duration in months", "disease duration"],
+};
+
+const normalizeReportText = (value) =>
+  String(value ?? "")
+    .toLowerCase()
+    .replace(/[_-]/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/[：:]/g, " ")
+    .trim();
+
+
+
+const extractClinicalValues = (rows) => {
+  const extracted = {};
+
+  const text = rows
+    .flat(Infinity)
+    .map((value) => String(value ?? "").trim())
+    .filter(Boolean)
+    .join("\n");
+
+  const lines = text
+    .split(/\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const normalize = (value) =>
+    String(value ?? "")
+      .toLowerCase()
+      .replace(/[_-]/g, " ")
+      .replace(/[：:]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const definitions = {
+    serum_creatinine: {
+      aliases: [
+        "serum creatinine",
+        "s creatinine",
+        "creatinine serum",
+        "creatinine",
+      ],
+      type: "number",
+    },
+
+    gfr: {
+      aliases: [
+        "estimated gfr",
+        "estimated glomerular filtration rate",
+        "egfr",
+        "e gfr",
+        "gfr",
+        "glomerular filtration rate",
+      ],
+      type: "number",
+    },
+
+    bun: {
+      aliases: [
+        "blood urea nitrogen bun",
+        "blood urea nitrogen",
+        "blood urea",
+        "bun",
+        "serum urea",
+        "urea",
+      ],
+      type: "number",
+    },
+
+    serum_calcium: {
+      aliases: [
+        "serum calcium",
+        "calcium total",
+        "calcium",
+      ],
+      type: "number",
+    },
+
+    oxalate_levels: {
+      aliases: [
+        "oxalate levels",
+        "oxalate level",
+        "oxalate",
+      ],
+      type: "number",
+    },
+
+    urine_ph: {
+      aliases: [
+        "urine ph",
+        "urinary ph",
+      ],
+      type: "number",
+    },
+
+    blood_pressure: {
+      aliases: [
+        "blood pressure",
+        "bp",
+      ],
+      type: "number",
+    },
+
+    ana: {
+      aliases: [
+        "antinuclear antibody",
+        "ana",
+      ],
+      type: "binary",
+    },
+
+    c3_c4: {
+      aliases: [
+        "c3/c4",
+        "c3 c4",
+        "complement c3",
+        "complement c4",
+      ],
+      type: "binary",
+    },
+
+    hematuria: {
+      aliases: [
+        "hematuria",
+        "haematuria",
+        "blood in urine",
+      ],
+      type: "binary",
+    },
+
+    smoking: {
+      aliases: [
+        "smoking history",
+        "smoking",
+      ],
+      type: "binary",
+    },
+
+    alcohol: {
+      aliases: [
+        "alcohol consumption",
+        "alcohol use",
+        "alcohol",
+      ],
+      type: "binary",
+    },
+
+    painkiller_usage: {
+      aliases: [
+        "regular painkiller usage",
+        "painkiller usage",
+        "analgesic use",
+      ],
+      type: "binary",
+    },
+
+    family_history: {
+      aliases: [
+        "family history of kidney disease",
+        "family history of ckd",
+        "family history",
+      ],
+      type: "binary",
+    },
+
+    physical_activity: {
+      aliases: [
+        "physical activity",
+        "activity level",
+      ],
+      type: "activity",
+    },
+
+    diet: {
+      aliases: [
+        "diet pattern",
+        "diet type",
+        "diet",
+      ],
+      type: "diet",
+    },
+
+    water_intake: {
+      aliases: [
+        "average water intake",
+        "daily water intake",
+        "water intake",
+      ],
+      type: "number",
+    },
+
+    weight_changes: {
+      aliases: [
+        "recent weight changes",
+        "weight changes",
+        "weight change",
+      ],
+      type: "weight",
+    },
+
+    stress_level: {
+      aliases: [
+        "stress level",
+        "stress",
+      ],
+      type: "stress",
+    },
+
+    months: {
+      aliases: [
+        "duration of current health monitoring",
+        "duration in months",
+        "disease duration",
+        "months",
+      ],
+      type: "number",
+    },
+  };
+
+  const parseValue = (field, raw) => {
+    const value = String(raw ?? "").trim();
+
+    if (!value) return undefined;
+
+    const type = definitions[field].type;
+
+    if (type === "number") {
+      if (
+        field === "gfr" &&
+        /egfr\s+by\s+ckd\s+epi\s+2021/i.test(value)
+      ) {
+        return undefined;
+      }
+
+      const match = value.match(/-?\d+(?:\.\d+)?/);
+
+      if (!match) return undefined;
+
+      const number = Number(match[0]);
+
+      if (!Number.isFinite(number)) return undefined;
+
+      if (
+        field === "water_intake" &&
+        /\bml\s*\/?\s*day\b/i.test(value)
+      ) {
+        return number / 1000;
+      }
+
+      return number;
+    }
+
+    if (type === "binary") {
+      if (/^(yes|positive|present|true|abnormal)\b/i.test(value)) {
+        return 1;
+      }
+
+      if (/^(no|negative|absent|false|normal)\b/i.test(value)) {
+        return 0;
+      }
+
+      const numericMatch = value.match(/^[01](?:\s|$)/);
+
+      if (numericMatch) {
+        return Number(numericMatch[0].trim());
+      }
+
+      return undefined;
+    }
+
+    if (type === "activity") {
+      if (/^(low|sedentary|inactive)\b/i.test(value)) return 0;
+      if (/^(moderate|medium)\b/i.test(value)) return 1;
+      if (/^(high|active|vigorous)\b/i.test(value)) return 2;
+    }
+
+    if (type === "diet") {
+      if (/^(balanced|healthy)\b/i.test(value)) return 0;
+      if (/^(mixed|moderate)\b/i.test(value)) return 1;
+      if (/^(unhealthy|high salt|high-salt)\b/i.test(value)) return 2;
+    }
+
+    if (type === "weight") {
+      if (/^(no|none|stable|no change)\b/i.test(value)) return 0;
+      if (/^(yes|moderate|some)\b/i.test(value)) return 1;
+      if (/^(significant|severe|major)\b/i.test(value)) return 2;
+    }
+
+    if (type === "stress") {
+      if (/^(low|mild)\b/i.test(value)) return 1;
+      if (/^(moderate|medium)\b/i.test(value)) return 2;
+      if (/^(high|severe)\b/i.test(value)) return 3;
+    }
+
+    return undefined;
+  };
+
+  const patientAliases = {
+    patientId: [
+      "patient id",
+      "patient code",
+      "uhid",
+    ],
+
+    patientName: [
+      "patient name",
+      "name",
+    ],
+
+    age: [
+      "age",
+    ],
+
+    gender: [
+      "gender",
+      "sex",
+    ],
+  };
+
+  const findLabelValue = (aliases) => {
+    const sortedAliases = [...aliases].sort(
+      (a, b) => normalize(b).length - normalize(a).length
+    );
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      for (const alias of sortedAliases) {
+        const escapedAlias = alias.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          "\\$&"
+        );
+
+        const match = line.match(
+          new RegExp(
+            "^\\s*" + escapedAlias + "\\s*(?::|=)?\\s*(.*)$",
+            "i"
+          )
+        );
+
+        if (!match) continue;
+
+        const remainder = match[1].trim();
+
+        if (remainder) {
+          return remainder;
+        }
+
+        for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
+          const candidate = lines[j].trim();
+
+          if (!candidate) continue;
+
+          const normalizedCandidate = normalize(candidate);
+
+          const isNextLabel = Object.values(patientAliases)
+            .flat()
+            .some(
+              (otherAlias) =>
+                normalizedCandidate === normalize(otherAlias)
+            );
+
+          if (isNextLabel) break;
+
+          return candidate;
+        }
+      }
+    }
+
+    return "";
+  };
+
+  const patientId = findLabelValue(patientAliases.patientId);
+  const patientName = findLabelValue(patientAliases.patientName);
+
+  let age = findLabelValue(patientAliases.age);
+  let gender = findLabelValue(patientAliases.gender);
+
+  const ageMatch = text.match(/\bAge\s*:?\s*(\d{1,3})\s*years?\b/i);
+
+  if (ageMatch) {
+    age = age || ageMatch[1];
+  }
+
+  const genderMatch = text.match(/\bGender\s*:?\s*(female|male|other)\b/i);
+
+  if (genderMatch) {
+    gender = gender || genderMatch[1];
+  }
+
+  extracted._patient = {
+    patientId: patientId.replace(/^[:=\s]+/, "").trim(),
+    patientName: patientName.replace(/^[:=\s]+/, "").trim(),
+    age: String(age).replace(/[^\d]/g, ""),
+    gender: String(gender).trim(),
+  };
+
+  const isKnownLabel = (line) => {
+    const normalizedLine = normalize(line);
+
+    return (
+      Object.values(definitions).some((definition) =>
+        definition.aliases.some(
+          (alias) => normalizedLine === normalize(alias)
+        )
+      ) ||
+      Object.values(patientAliases).flat().some(
+        (alias) => normalizedLine === normalize(alias)
+      )
+    );
+  };
+
+  const getRawValue = (index, alias) => {
+    const line = lines[index];
+
+    const escapedAlias = alias.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
+
+    const sameLineMatch = line.match(
+      new RegExp(
+        "^\\s*" +
+          escapedAlias +
+          "\\s*(?::|=)?\\s*(.*)$",
+        "i"
+      )
+    );
+
+    if (sameLineMatch && sameLineMatch[1].trim()) {
+      return sameLineMatch[1].trim();
+    }
+
+    // Handle labels and values on separate lines.
+    for (let j = index + 1; j < Math.min(index + 5, lines.length); j++) {
+      const candidate = lines[j].trim();
+
+      if (!candidate) continue;
+
+      if (isKnownLabel(candidate)) break;
+
+      if (
+        /^(test|result|unit|examination|finding|reference|remarks?)$/i.test(
+          candidate
+        )
+      ) {
+        continue;
+      }
+
+      return candidate;
+    }
+
+    return "";
+  };
+  
+  // Special handling for BUN in PDF reports
+  for (let i = 0; i < lines.length; i++) {
+    const label = normalize(lines[i]);
+
+    if (
+      label === "blood urea nitrogen (bun)" ||
+      label === "blood urea nitrogen" ||
+      label === "bun" ||
+      label === "blood urea" ||
+      label === "serum urea"
+    ) {
+      for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
+        const candidate = lines[j].trim();
+
+        // Stop if the next clinical test starts.
+        if (
+          /^(serum creatinine|estimated gfr|egfr|gfr|serum calcium|oxalate level|urine ph|hematuria|ana|c3\/c4)$/i.test(
+            normalize(candidate)
+          )
+        ) {
+          break;
+        }
+
+        const match = candidate.match(
+          /^(-?\d+(?:\.\d+)?)\s*(?:mg\s*\/?\s*dl)?$/i
+        );
+
+        if (match) {
+          extracted.bun = Number(match[1]);
+          break;
+        }
+      }
+    }
+
+    if (extracted.bun !== undefined) break;
+  }
+
+
+
+  for (const [field, definition] of Object.entries(definitions)) {
+    const aliases = [...definition.aliases].sort(
+      (a, b) => normalize(b).length - normalize(a).length
+    );
+
+    for (let i = 0; i < lines.length; i++) {
+      const normalizedLine = normalize(lines[i]);
+
+      const alias = aliases.find((candidate) => {
+        const normalizedAlias = normalize(candidate);
+
+        return (
+          normalizedLine === normalizedAlias ||
+          normalizedLine.startsWith(normalizedAlias + " ") ||
+          normalizedLine.startsWith(normalizedAlias + ":") ||
+          normalizedLine.startsWith(normalizedAlias + "=")
+        );
+      });
+
+      if (!alias) continue;
+
+      const rawValue = getRawValue(i, alias);
+
+      const parsed = parseValue(field, rawValue);
+
+      if (parsed !== undefined) {
+        extracted[field] = parsed;
+        break;
+      }
+    }
+  }
+
+  console.log("Clinical report text:", text);
+  console.log("Extracted values:", extracted);
+
+  return extracted;
+};
+
+
+const handleClinicalReportSelect = async (e) => {
+const files = Array.from(e.target.files || []);
+if (!files.length) return;
+
+const invalidFile = files.find((file) => {
+const name = file.name.toLowerCase();
+return !(
+name.endsWith(".pdf") ||
+name.endsWith(".xlsx") ||
+name.endsWith(".xls")
+);
+});
+
+if (invalidFile) {
+setError("Please upload only PDF, XLSX, or XLS clinical reports.");
+e.target.value = "";
+return;
+}
+
+setReportFile(files.length === 1 ? files[0] : {
+name: `${files.length} clinical reports selected`,
+});
+
+setReportLoading(true);
+setError("");
+
+try {
+const allRows = [];
+
+for (const file of files) {
+  const name = file.name.toLowerCase();
+
+  if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: "array" });
+
+    for (const sheetName of workbook.SheetNames) {
+      const worksheet = workbook.Sheets[sheetName];
+      const sheetRows = XLSX.utils.sheet_to_json(worksheet, {
+        header: 1,
+        defval: "",
+        raw: false,
+      });
+
+      allRows.push(...sheetRows);
+    }
+  } else {
+    const buffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({
+      data: new Uint8Array(buffer),
+    }).promise;
+
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+      const page = await pdf.getPage(pageNumber);
+      const content = await page.getTextContent();
+
+      const items = content.items
+        .filter((item) => item.str?.trim())
+        .map((item) => ({
+          text: item.str.trim(),
+          x: item.transform?.[4] ?? 0,
+          y: item.transform?.[5] ?? 0,
+        }));
+
+      const visualRows = [];
+
+      for (const item of items) {
+        let row = visualRows.find(
+          (existing) => Math.abs(existing.y - item.y) < 3
+        );
+
+        if (!row) {
+          row = { y: item.y, items: [] };
+          visualRows.push(row);
+        }
+
+        row.items.push(item);
+      }
+
+      visualRows.sort((a, b) => b.y - a.y);
+
+      for (const row of visualRows) {
+        row.items.sort((a, b) => a.x - b.x);
+        allRows.push(row.items.map((item) => item.text));
+      }
+
+      // Preserve all text for reports with unusual layouts.
+      allRows.push(items.map((item) => item.text));
+    }
+  }
+}
+
+
+const extracted = extractClinicalValues(allRows);
+
+const { _patient, ...clinicalValues } = extracted;
+
+const foundFields = Object.keys(clinicalValues);
+
+if (foundFields.length > 0) {
+  setClinicalData((previous) => ({
+    ...previous,
+    ...clinicalValues,
+  }));
+}
+
+if (_patient) {
+  setPatient((previous) => ({
+    ...previous,
+    patientId: _patient.patientId || previous.patientId,
+    patientName: _patient.patientName || previous.patientName,
+    age: _patient.age || previous.age,
+    gender: _patient.gender || previous.gender,
+  }));
+}
+
+const missingFields = Object.keys(initialClinicalData).filter(
+  (field) => clinicalValues[field] === undefined
+);
+
+setError(
+  `Extracted ${foundFields.length} of 20 clinical parameters. ` +
+    (missingFields.length
+      ? `Not found: ${missingFields.join(", ")}.`
+      : "All 20 clinical parameters were found.")
+);
+
+
+
+
+} catch (error) {
+console.error("Clinical report extraction error:", error);
+setError(
+`Unable to read report: ${error?.message || String(error)}`
+);
+} finally {
+setReportLoading(false);
+e.target.value = "";
+}
+};
+
+
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -459,6 +1213,8 @@ formData.append(
     });
 
     setClinicalData(initialClinicalData);
+    setReportFile(null);
+setReportLoading(false);
 
     setSelectedDemo("");
     setUltrasound(null);
@@ -1315,6 +2071,27 @@ formData.append(
               </div>
 
             </section>
+            {/* PERFORMANCE METRICS NAVIGATION BAR */}
+        <button
+          type="button"
+          className="performance-metrics-bar"
+          onClick={() => setPage(4)}
+        >
+          <span className="metrics-bar-icon">📊</span>
+
+          <span className="metrics-bar-content">
+            <strong>Performance Metrics</strong>
+            <small>
+              Explore model accuracy, precision, recall, F1-score,
+              ROC-AUC and model comparison
+            </small>
+          </span>
+
+          <span className="metrics-bar-action">
+            View Dashboard →
+          </span>
+        </button>
+
 
             <section className="form-card">
 
@@ -1394,9 +2171,53 @@ formData.append(
                   </select>
                 </div>
 
-              </div>
+              
+          </div>
 
-            </section>
+        </section>
+        <section className="form-card clinical-report-upload-card">
+  <div className="card-heading">
+    <div>
+      <span className="section-kicker">
+        AUTOMATED DATA ENTRY
+      </span>
+
+      <h3>Upload Clinical Report</h3>
+
+      <p>
+        Select a PDF or Excel report to import clinical parameters.
+      </p>
+    </div>
+  </div>
+
+  <label className="clinical-report-upload">
+    <input
+  type="file"
+  accept=".pdf,.xlsx,.xls,application/pdf"
+  multiple
+  onChange={handleClinicalReportSelect}
+/>
+
+    <span className="clinical-report-upload-icon">↑</span>
+
+    <strong>
+      {reportFile ? reportFile.name : "Choose Clinical Report"}
+    </strong>
+
+    <small>Supported formats: PDF, XLSX, XLS</small>
+  </label>
+
+  {reportFile && (
+    <div className="clinical-report-selected">
+      Selected file: {reportFile.name}
+    </div>
+  )}
+</section>
+
+        
+        
+
+
 
             <section className="form-card">
 
@@ -2059,6 +2880,300 @@ formData.append(
 
           </>
         )}
+                {/* PAGE 4 — PERFORMANCE METRICS DASHBOARD */}
+        {page === 4 && (
+          <section className="performance-dashboard">
+
+            {/* Dashboard Header */}
+            <div className="performance-header">
+
+              <span className="section-kicker">
+                NEPHROPREDICTOR • MODEL EVALUATION
+              </span>
+<div className="performance-dashboard-header">
+  <h2>Performance Metrics Dashboard</h2>
+  <p className="performance-dashboard-subtitle">
+    Compare the experimental performance of the machine learning models used in CKD prediction.
+  </p>
+</div>
+
+
+              <div className="metrics-header-badge">
+                AI MODEL ANALYTICS
+              </div>
+
+            </div>
+
+            {/* Highlighted Metrics */}
+            <div className="performance-summary-grid">
+
+              <div className="performance-summary-card">
+                <span>Models Evaluated</span>
+                <strong>03</strong>
+                <small>SVM • XGBoost • Random Forest</small>
+              </div>
+
+              <div className="performance-summary-card">
+                <span>Highest Recorded Accuracy</span>
+                <strong>99.93%</strong>
+                <small>Random Forest</small>
+              </div>
+
+              <div className="performance-summary-card">
+                <span>Proposed Model</span>
+                <strong>RF</strong>
+                <small>Random Forest Classifier</small>
+              </div>
+
+            </div>
+
+            {/* Three Model Cards */}
+            <div className="performance-model-grid">
+
+              {performanceMetrics.map((model, index) => (
+                <div
+                  key={model.name}
+                  className={`performance-model-card ${
+                    model.name === "Random Forest"
+                      ? "proposed-model-card"
+                      : ""
+                  }`}
+                >
+
+                  <div className="performance-card-top">
+                    <span className="model-number">
+                      MODEL 0{index + 1}
+                    </span>
+
+                    {model.name === "Random Forest" && (
+                      <span className="proposed-model-badge">
+                        PROPOSED
+                      </span>
+                    )}
+                  </div>
+
+                  <h3>{model.name}</h3>
+
+                  <p className="model-type">
+                    {model.type}
+                  </p>
+
+                  <div className="model-accuracy-display">
+                    <span>Accuracy</span>
+
+                    <strong>
+                      {model.accuracy.toFixed(2)}%
+                    </strong>
+                  </div>
+
+                  <div className="model-accuracy-track">
+                    <div
+                      className="model-accuracy-fill"
+                      style={{
+                        width: `${model.accuracy}%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="performance-mini-metrics">
+
+                    <div>
+                      <span>Precision</span>
+                      <strong>
+                        {model.precision.toFixed(2)}%
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Recall</span>
+                      <strong>
+                        {model.recall.toFixed(2)}%
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>F1-score</span>
+                      <strong>
+                        {model.f1.toFixed(2)}%
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>ROC-AUC</span>
+                      <strong>
+                        {model.auc.toFixed(2)}%
+                      </strong>
+                    </div>
+
+                  </div>
+
+                </div>
+              ))}
+
+            </div>
+
+            {/* Model Comparison Table */}
+            <div className="performance-table-card">
+
+              <div className="performance-section-heading">
+                <span className="section-kicker">
+                  DETAILED COMPARISON
+                </span>
+
+                <h3>Model Performance Comparison</h3>
+
+                <p>
+                  Compare all five recorded evaluation metrics.
+                </p>
+              </div>
+
+              <div className="performance-table-scroll">
+
+                <table className="performance-comparison-table">
+
+                  <thead>
+                    <tr>
+                      <th>Model</th>
+                      <th>Accuracy</th>
+                      <th>Precision</th>
+                      <th>Recall</th>
+                      <th>F1-score</th>
+                      <th>ROC-AUC</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {performanceMetrics.map((model) => (
+                      <tr
+                        key={model.name}
+                        className={
+                          model.name === "Random Forest"
+                            ? "highlighted-model-row"
+                            : ""
+                        }
+                      >
+                        <td>
+                          <strong>{model.name}</strong>
+
+                          {model.name === "Random Forest" && (
+                            <span className="table-proposed-label">
+                              Proposed
+                            </span>
+                          )}
+                        </td>
+
+                        <td>{model.accuracy.toFixed(2)}%</td>
+                        <td>{model.precision.toFixed(2)}%</td>
+                        <td>{model.recall.toFixed(2)}%</td>
+                        <td>{model.f1.toFixed(2)}%</td>
+                        <td>{model.auc.toFixed(2)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+
+                </table>
+
+              </div>
+
+            </div>
+
+            {/* Visual Accuracy Comparison */}
+            <div className="performance-chart-card">
+
+              <div className="performance-section-heading">
+                <span className="section-kicker">
+                  VISUAL ANALYTICS
+                </span>
+
+                <h3>Accuracy Comparison</h3>
+
+                <p>
+                  Recorded accuracy of each evaluated model.
+                </p>
+              </div>
+
+              <div className="accuracy-chart">
+
+                {performanceMetrics.map((model) => (
+                  <div
+                    className="accuracy-chart-row"
+                    key={model.name}
+                  >
+
+                    <div className="accuracy-chart-label">
+                      <strong>{model.name}</strong>
+
+                      <span>
+                        {model.accuracy.toFixed(2)}%
+                      </span>
+                    </div>
+
+                    <div className="accuracy-chart-track">
+
+                      <div
+                        className={`accuracy-chart-fill ${
+                          model.name === "Random Forest"
+                            ? "accuracy-chart-proposed"
+                            : ""
+                        }`}
+                        style={{
+                          width: `${model.accuracy}%`,
+                        }}
+                      />
+
+                    </div>
+
+                  </div>
+                ))}
+
+              </div>
+
+            </div>
+
+            {/* Evaluation Disclaimer */}
+            <div className="metrics-evaluation-note">
+
+              <strong>Evaluation Notes</strong>
+
+              <p>
+                These figures represent previously recorded
+                experimental results, not independently validated
+                clinical performance. The SVM used a different
+                evaluation setup. SMOTE was applied before the
+                train-test split for the original Random Forest
+                and XGBoost evaluation, which can cause data
+                leakage and inflate results. Independent evaluation
+                with SMOTE applied only to training data is needed
+                for a fair comparison.
+              </p>
+
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="performance-navigation">
+
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setPage(1)}
+              >
+                ← Back to Clinical Dataset
+              </button>
+
+              <button
+                type="button"
+                className="performance-return-button"
+                onClick={() => setPage(1)}
+              >
+                Return to Dashboard
+              </button>
+
+            </div>
+
+          </section>
+        )}
+
+      
 
       </main>
 

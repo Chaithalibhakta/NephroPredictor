@@ -1,9 +1,14 @@
+
 import pandas as pd
 import joblib
+import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
     classification_report,
     confusion_matrix,
     roc_auc_score
@@ -13,30 +18,37 @@ from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 from imblearn.over_sampling import SMOTE
 
+
 # ==========================================
 # Load Processed Dataset
 # ==========================================
+
 df = pd.read_csv("../dataset/clinical/processed_ckd_dataset.csv")
 
-print("=" * 50)
-print("DATASET LOADED SUCCESSFULLY")
-print("=" * 50)
+print("=" * 60)
+print("NEPHROPREDICTOR - CLINICAL MODEL EVALUATION")
+print("=" * 60)
 
-print("Shape:", df.shape)
+print("Dataset shape:", df.shape)
+
 
 # ==========================================
 # Features & Target
 # ==========================================
-X = df.drop(["ckd_pred", "ckd_stage"], axis=1)
 
+X = df.drop(["ckd_pred", "ckd_stage"], axis=1)
 y = df["ckd_pred"]
 
 print("\nOriginal Dataset Distribution")
 print(y.value_counts())
 
+
 # ==========================================
 # Apply SMOTE
 # ==========================================
+
+print("\nApplying SMOTE...")
+
 smote = SMOTE(random_state=42)
 
 X_resampled, y_resampled = smote.fit_resample(X, y)
@@ -44,9 +56,11 @@ X_resampled, y_resampled = smote.fit_resample(X, y)
 print("\nBalanced Dataset Distribution")
 print(pd.Series(y_resampled).value_counts())
 
+
 # ==========================================
-# Train Test Split
+# Train-Test Split
 # ==========================================
+
 X_train, X_test, y_train, y_test = train_test_split(
     X_resampled,
     y_resampled,
@@ -55,12 +69,45 @@ X_train, X_test, y_train, y_test = train_test_split(
     stratify=y_resampled
 )
 
+print("\nTraining records:", len(X_train))
+print("Testing records :", len(X_test))
+
+
+# ==========================================
+# Helper Function for Metrics
+# ==========================================
+
+def calculate_metrics(y_true, predictions, probabilities):
+
+    return {
+        "Accuracy": accuracy_score(y_true, predictions),
+        "Precision": precision_score(
+            y_true, predictions, zero_division=0
+        ),
+        "Recall": recall_score(
+            y_true, predictions, zero_division=0
+        ),
+        "F1-score": f1_score(
+            y_true, predictions, zero_division=0
+        ),
+        "ROC-AUC": roc_auc_score(y_true, probabilities)
+    }
+
+
+def display_metrics(model_name, metrics):
+
+    print(f"\n{model_name} PERFORMANCE")
+    print("-" * 40)
+
+    for metric_name, value in metrics.items():
+        print(f"{metric_name:<12}: {value * 100:.2f}%")
+
+
 # ==========================================
 # Random Forest
 # ==========================================
-print("\n==============================")
-print("Training Random Forest")
-print("==============================")
+
+print("\nTraining Random Forest...")
 
 rf = RandomForestClassifier(
     n_estimators=200,
@@ -70,31 +117,26 @@ rf = RandomForestClassifier(
 rf.fit(X_train, y_train)
 
 rf_pred = rf.predict(X_test)
-
 rf_prob = rf.predict_proba(X_test)[:, 1]
 
-rf_acc = accuracy_score(y_test, rf_pred)
+rf_metrics = calculate_metrics(
+    y_test, rf_pred, rf_prob
+)
 
-rf_auc = roc_auc_score(y_test, rf_prob)
+display_metrics("RANDOM FOREST", rf_metrics)
 
-print("\nRandom Forest Accuracy:", round(rf_acc * 100, 2), "%")
-
-print("Random Forest AUC:", round(rf_auc, 4))
-
-print("\nClassification Report")
-
+print("\nRandom Forest Classification Report")
 print(classification_report(y_test, rf_pred))
 
-print("Confusion Matrix")
-
+print("Random Forest Confusion Matrix")
 print(confusion_matrix(y_test, rf_pred))
+
 
 # ==========================================
 # XGBoost
 # ==========================================
-print("\n==============================")
-print("Training XGBoost")
-print("==============================")
+
+print("\nTraining XGBoost...")
 
 xgb = XGBClassifier(
     random_state=42,
@@ -104,82 +146,89 @@ xgb = XGBClassifier(
 xgb.fit(X_train, y_train)
 
 xgb_pred = xgb.predict(X_test)
-
 xgb_prob = xgb.predict_proba(X_test)[:, 1]
 
-xgb_acc = accuracy_score(y_test, xgb_pred)
+xgb_metrics = calculate_metrics(
+    y_test, xgb_pred, xgb_prob
+)
 
-xgb_auc = roc_auc_score(y_test, xgb_prob)
+display_metrics("XGBOOST", xgb_metrics)
 
-print("\nXGBoost Accuracy:", round(xgb_acc * 100, 2), "%")
-
-print("XGBoost AUC:", round(xgb_auc, 4))
-
-print("\nClassification Report")
-
+print("\nXGBoost Classification Report")
 print(classification_report(y_test, xgb_pred))
 
-print("Confusion Matrix")
-
+print("XGBoost Confusion Matrix")
 print(confusion_matrix(y_test, xgb_pred))
+
+
 # ==========================================
 # Model Comparison
 # ==========================================
-print("\n==============================")
-print("MODEL COMPARISON")
-print("==============================")
 
-print(f"Random Forest Accuracy : {rf_acc * 100:.2f}%")
-print(f"Random Forest AUC      : {rf_auc:.4f}")
+print("\n")
+print("=" * 85)
+print("FINAL MODEL COMPARISON")
+print("=" * 85)
 
-print(f"XGBoost Accuracy       : {xgb_acc * 100:.2f}%")
-print(f"XGBoost AUC            : {xgb_auc:.4f}")
+results = pd.DataFrame([
+    {"Model": "Random Forest", **rf_metrics},
+    {"Model": "XGBoost", **xgb_metrics}
+])
+
+# Convert metric values to percentages for display.
+display_results = results.copy()
+
+metric_columns = [
+    "Accuracy",
+    "Precision",
+    "Recall",
+    "F1-score",
+    "ROC-AUC"
+]
+
+for column in metric_columns:
+    display_results[column] = display_results[column].map(
+        lambda value: f"{value * 100:.2f}%"
+    )
+
+print(display_results.to_string(index=False))
+
 
 # ==========================================
-# Select Best Model
+# Identify Best Model
 # ==========================================
-if xgb_acc >= rf_acc:
-    best_model = xgb
+
+if xgb_metrics["Accuracy"] >= rf_metrics["Accuracy"]:
     best_name = "XGBoost"
-    best_accuracy = xgb_acc
+    best_accuracy = xgb_metrics["Accuracy"]
 else:
-    best_model = rf
     best_name = "Random Forest"
-    best_accuracy = rf_acc
+    best_accuracy = rf_metrics["Accuracy"]
+
+
+print("\nBest Model in This Evaluation:", best_name)
+print(f"Accuracy: {best_accuracy * 100:.2f}%")
+
 
 # ==========================================
-# Save Best Model
+# Save Evaluation Metrics
 # ==========================================
-joblib.dump(best_model, "../models/best_ckd_model.pkl")
 
-print("\n===================================")
-print("BEST MODEL")
-print("===================================")
+results.to_csv(
+    "model_comparison_metrics.csv",
+    index=False
+)
 
-print("Best Model :", best_name)
-print("Accuracy   :", round(best_accuracy * 100, 2), "%")
+print("\nMetrics saved to:")
+print("classification/model_comparison_metrics.csv")
 
-print("\nModel saved successfully!")
 
 # ==========================================
-# Verify Saved Model
+# Protect Existing Model
 # ==========================================
-loaded_model = joblib.load("../models/best_ckd_model.pkl")
 
-print("\nLoaded Model Type:")
-print(type(loaded_model))
+print("\nExisting deployed model has NOT been modified.")
+print("File protected: ../models/best_ckd_model.pkl")
 
-print("\nClasses:")
-print(loaded_model.classes_)
+print("\nEvaluation completed successfully.")
 
-print("\nPrediction Check")
-
-sample = X_test.iloc[[0]]
-
-print("Actual Label    :", y_test.iloc[0])
-print("Predicted Label :", loaded_model.predict(sample)[0])
-print("Probabilities   :", loaded_model.predict_proba(sample)[0])
-
-print("\n===================================")
-print("TRAINING COMPLETED SUCCESSFULLY")
-print("===================================")

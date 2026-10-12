@@ -1,12 +1,31 @@
-__pycache__/
-*.pyc
+**pycache**/
+*.py[cod]
 
-dataset/clinical/*.csv
-
-models/*.pkl
-
-# U-Net trained models
-segmentation/models/*.pth
+# Python environments
 
 venv/
 .venv/
+
+# Clinical datasets and patient data
+
+dataset/clinical/*.csv
+patient_data/
+
+# Trained machine learning models
+
+models/*.pkl
+segmentation/models/*.pth
+
+# Ultrasound dataset and generated masks
+
+ultrasound_dataset/
+segmentation/masks/
+
+# Local CSV files and evaluation outputs
+
+*.csv
+
+# Operating system files
+
+.DS_Store
+Thumbs.db

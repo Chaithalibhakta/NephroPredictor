@@ -1,46 +1,33 @@
 
+from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import pandas as pd
+import numpy as np
+import joblib
 import os
 import json
-import joblib
-import numpy as np
-import pandas as pd
-import cv2
-
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+import io
+import sys
+from PIL import Image
 
 
 # ============================================================
-# PATHS
+# TORCH
 # ============================================================
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(BASE_DIR)
 
-MODELS_DIR = os.path.join(PROJECT_DIR, "models")
-SEGMENTATION_DIR = os.path.join(PROJECT_DIR, "segmentation")
-IMAGE_DIR = os.path.join(SEGMENTATION_DIR, "images")
+try:
+    import torch
+    import torch.nn as nn
+    TORCH_AVAILABLE = True
+    print(f"PyTorch loaded successfully: {torch.__version__}")
 
-CLINICAL_MODEL_PATH = os.path.join(
-    MODELS_DIR, "best_ckd_model.pkl"
-)
+except Exception as e:
+    TORCH_AVAILABLE = False
+    print(f"PyTorch import failed: {type(e).__name__}: {e}")
 
-SCALER_PATH = os.path.join(
-    MODELS_DIR, "scaler.pkl"
-)
 
-STAGE_MODEL_PATH = os.path.join(
-    MODELS_DIR, "stage_model.pkl"
-)
-
-IMAGE_RF_PATH = os.path.join(
-    MODELS_DIR, "image_random_forest.pkl"
-)
-
-UNET_PATH = os.path.join(
-    SEGMENTATION_DIR, "models", "best_unet.pth"
-)
 
 
 # ============================================================
@@ -49,7 +36,7 @@ UNET_PATH = os.path.join(
 
 app = FastAPI(
     title="NephroPredictor API",
-    description="CKD prediction using clinical and ultrasound data",
+    description="CKD Early Detection API",
     version="1.0"
 )
 
@@ -71,126 +58,19 @@ app.add_middleware(
 
 
 # ============================================================
-# OPTIONAL PYTORCH / U-NET
+# BASE DIRECTORIES
 # ============================================================
 
-TORCH_AVAILABLE = False
-TORCH_ERROR = None
-torch = None
-UNet = None
+BASE_DIR = r"C:\Users\HP\OneDrive\Desktop\NephroPredictorr"
 
-try:
-    import torch
-
-    TORCH_AVAILABLE = True
-
-    try:
-        from unet_model import UNet
-    except Exception:
-        # Try importing from segmentation folder
-        import sys
-
-        if SEGMENTATION_DIR not in sys.path:
-            sys.path.append(SEGMENTATION_DIR)
-
-        from unet_model import UNet
-
-except Exception as e:
-    TORCH_AVAILABLE = False
-    TORCH_ERROR = str(e)
+MODEL_DIR = os.path.join(
+    BASE_DIR,
+    "models"
+)
 
 
 # ============================================================
-# LOAD MODELS
-# ============================================================
-
-clinical_model = None
-scaler = None
-stage_model = None
-image_model = None
-unet_model = None
-
-
-# ---------- Clinical model ----------
-
-try:
-    clinical_model = joblib.load(CLINICAL_MODEL_PATH)
-    print("Clinical model loaded successfully.")
-except Exception as e:
-    print("Clinical model loading failed:", e)
-
-
-# ---------- Scaler ----------
-
-try:
-    scaler = joblib.load(SCALER_PATH)
-    print("Scaler loaded successfully.")
-except Exception as e:
-    print("Scaler loading failed:", e)
-
-
-# ---------- Stage model ----------
-
-try:
-    stage_model = joblib.load(STAGE_MODEL_PATH)
-    print("Stage model loaded successfully.")
-except Exception as e:
-    print("Stage model loading failed:", e)
-
-
-# ---------- Image model ----------
-
-try:
-    image_model = joblib.load(IMAGE_RF_PATH)
-    print("Image model loaded successfully.")
-except Exception as e:
-    print("Image model loading failed:", e)
-
-
-# ---------- U-Net ----------
-
-if TORCH_AVAILABLE:
-
-    try:
-
-        unet_model = UNet()
-
-        checkpoint = torch.load(
-            UNET_PATH,
-            map_location="cpu"
-        )
-
-        if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
-            unet_model.load_state_dict(
-                checkpoint["model_state_dict"]
-            )
-        else:
-            unet_model.load_state_dict(checkpoint)
-
-        unet_model.eval()
-
-        print("U-Net loaded successfully.")
-
-    except Exception as e:
-
-        unet_model = None
-        TORCH_ERROR = str(e)
-
-        print(
-            "U-Net loading failed:",
-            TORCH_ERROR
-        )
-
-else:
-
-    print(
-        "PyTorch unavailable. "
-        "U-Net endpoints will remain unavailable."
-    )
-
-
-# ============================================================
-# CLINICAL FEATURES
+# CLINICAL FEATURE COLUMNS
 # ============================================================
 
 FEATURE_COLUMNS = [
@@ -218,50 +98,196 @@ FEATURE_COLUMNS = [
 
 
 # ============================================================
-# PYDANTIC MODEL
+# CLINICAL MODEL
+# ============================================================
+
+clinical_model = None
+
+try:
+    clinical_model = joblib.load(
+        os.path.join(
+            MODEL_DIR,
+            "best_ckd_model.pkl"
+        )
+    )
+
+    print("Clinical model loaded successfully.")
+
+except Exception as e:
+    print(
+        "Clinical model loading failed:",
+        e
+    )
+
+
+# ============================================================
+# SCALER
+# ============================================================
+
+scaler = None
+
+try:
+    scaler = joblib.load(
+        os.path.join(
+            MODEL_DIR,
+            "scaler.pkl"
+        )
+    )
+
+    print("Scaler loaded successfully.")
+
+except Exception as e:
+    print(
+        "Scaler loading failed:",
+        e
+    )
+
+
+# ============================================================
+# STAGE MODEL
+# ============================================================
+
+stage_model = None
+
+try:
+    stage_model = joblib.load(
+        os.path.join(
+            MODEL_DIR,
+            "stage_model.pkl"
+        )
+    )
+
+    print("Stage model loaded successfully.")
+
+except Exception as e:
+    print(
+        "Stage model loading failed:",
+        e
+    )
+
+
+# ============================================================
+# U-NET
+# ============================================================
+
+unet_model = None
+
+if TORCH_AVAILABLE:
+
+    try:
+
+        # Add segmentation directory so the exact
+        # trained U-Net architecture can be imported.
+
+        segmentation_dir = os.path.join(
+            BASE_DIR,
+            "segmentation"
+        )
+
+        if segmentation_dir not in sys.path:
+            sys.path.insert(
+                0,
+                segmentation_dir
+            )
+
+        from unet_model import UNet
+
+        # Create U-Net
+
+        unet_model = UNet()
+
+        # Correct trained U-Net path
+
+        unet_path = os.path.join(
+            BASE_DIR,
+            "segmentation",
+            "models",
+            "best_unet.pth"
+        )
+
+        # Load trained weights
+
+        state_dict = torch.load(
+            unet_path,
+            map_location="cpu"
+        )
+
+        unet_model.load_state_dict(
+            state_dict
+        )
+
+        unet_model.eval()
+
+        print("U-Net loaded successfully.")
+
+    except Exception as e:
+
+        print(
+            "U-Net loading failed:",
+            e
+        )
+
+        unet_model = None
+
+
+# ============================================================
+# IMAGE MODEL
+# ============================================================
+
+image_model = None
+
+try:
+
+    # Correct trained image Random Forest path
+
+    image_model_path = os.path.join(
+        BASE_DIR,
+        "models",
+        "image_random_forest.pkl"
+    )
+
+    image_model = joblib.load(
+        image_model_path
+    )
+
+    print("Image model loaded successfully.")
+
+except Exception as e:
+
+    print(
+        "Image model loading failed:",
+        e
+    )
+
+    image_model = None
+
+
+# ============================================================
+# PATIENT MODEL
 # ============================================================
 
 class PatientData(BaseModel):
 
-    serum_creatinine: float = Field(ge=0)
-    gfr: float = Field(ge=0)
-
-    bun: float = Field(ge=0)
-
-    serum_calcium: float = Field(ge=0)
-
-    oxalate_levels: float = Field(ge=0)
-
-    urine_ph: float = Field(
-        ge=0,
-        le=14
-    )
-
-    blood_pressure: float = Field(ge=0)
-
-    ana: float = Field(ge=0)
-    c3_c4: float = Field(ge=0)
-
-    hematuria: float = Field(ge=0)
-
-    smoking: float = Field(ge=0)
-    alcohol: float = Field(ge=0)
-
-    painkiller_usage: float = Field(ge=0)
-
-    family_history: float = Field(ge=0)
-
-    physical_activity: float = Field(ge=0)
-
-    diet: float = Field(ge=0)
-
-    water_intake: float = Field(ge=0)
-
-    weight_changes: float = Field(ge=0)
-
-    stress_level: float = Field(ge=0)
-
-    months: float = Field(ge=0)
+    serum_creatinine: float
+    gfr: float
+    bun: float
+    serum_calcium: float
+    oxalate_levels: float
+    urine_ph: float
+    blood_pressure: float
+    ana: float
+    c3_c4: float
+    hematuria: float
+    smoking: float
+    alcohol: float
+    painkiller_usage: float
+    family_history: float
+    physical_activity: float
+    diet: float
+    water_intake: float
+    weight_changes: float
+    stress_level: float
+    months: float
 
 
 # ============================================================
@@ -272,8 +298,7 @@ class PatientData(BaseModel):
 def root():
 
     return {
-        "message": "NephroPredictor API is running",
-        "status": "Healthy"
+        "message": "NephroPredictor API is running"
     }
 
 
@@ -285,6 +310,7 @@ def root():
 def health():
 
     return {
+
         "status": "Healthy",
 
         "model_loaded":
@@ -293,27 +319,27 @@ def health():
         "ckd_model":
             "Loaded"
             if clinical_model is not None
-            else "Unavailable",
+            else "Not Loaded",
 
         "scaler":
             "Loaded"
             if scaler is not None
-            else "Unavailable",
+            else "Not Loaded",
 
         "stage_model":
             "Loaded"
             if stage_model is not None
-            else "Unavailable",
+            else "Not Loaded",
 
         "unet_model":
             "Loaded"
             if unet_model is not None
-            else "Unavailable",
+            else "Not Loaded",
 
         "image_model":
             "Loaded"
             if image_model is not None
-            else "Unavailable",
+            else "Not Loaded",
 
         "torch_available":
             TORCH_AVAILABLE
@@ -327,164 +353,218 @@ def health():
 @app.post("/predict")
 def predict(patient: PatientData):
 
-    # --------------------------------------------------------
-    # Check models
-    # --------------------------------------------------------
-
     if clinical_model is None:
 
-        raise HTTPException(
-            status_code=500,
-            detail="Clinical model is not loaded."
-        )
+        return {
+            "status": "Error",
+            "message": "Clinical model not loaded"
+        }
 
     if scaler is None:
 
-        raise HTTPException(
-            status_code=500,
-            detail="Clinical scaler is not loaded."
+        return {
+            "status": "Error",
+            "message": "Scaler not loaded"
+        }
+
+    try:
+
+        patient_data = patient.model_dump()
+
+        # ----------------------------------------------------
+        # Raw input in exact feature order
+        # ----------------------------------------------------
+
+        input_df = pd.DataFrame(
+            [patient_data],
+            columns=FEATURE_COLUMNS
         )
 
+        # ----------------------------------------------------
+        # Scale clinical input
+        # ----------------------------------------------------
 
-    # --------------------------------------------------------
-    # Convert patient data to dictionary
-    # --------------------------------------------------------
+        input_scaled = pd.DataFrame(
+            scaler.transform(input_df),
+            columns=FEATURE_COLUMNS
+        )
 
-    patient_data = patient.model_dump()
+        # ----------------------------------------------------
+        # Clinical prediction
+        # ----------------------------------------------------
 
-
-    # --------------------------------------------------------
-    # IMPORTANT:
-    # Create DataFrame in EXACT training feature order
-    # --------------------------------------------------------
-
-    input_df = pd.DataFrame(
-        [[patient_data[column] for column in FEATURE_COLUMNS]],
-        columns=FEATURE_COLUMNS
-    )
-
-
-    # --------------------------------------------------------
-    # SCALE RAW CLINICAL VALUES
-    # --------------------------------------------------------
-
-    input_scaled = scaler.transform(input_df)
-
-
-    # --------------------------------------------------------
-    # CKD PREDICTION
-    # --------------------------------------------------------
-
-    prediction = int(
-        clinical_model.predict(input_scaled)[0]
-    )
-
-
-    # --------------------------------------------------------
-    # PROBABILITY
-    # --------------------------------------------------------
-
-    probabilities = clinical_model.predict_proba(
-        input_scaled
-    )[0]
-
-    confidence = float(
-        np.max(probabilities) * 100
-    )
-
-
-    # --------------------------------------------------------
-    # LABEL
-    # --------------------------------------------------------
-
-    if prediction == 1:
-
-        prediction_label = "CKD Detected"
-
-    else:
-
-        prediction_label = "Healthy"
-
-
-    # --------------------------------------------------------
-    # RISK LEVEL
-    # --------------------------------------------------------
-
-    if prediction == 1:
-
-        if confidence >= 80:
-            risk_level = "High"
-
-        elif confidence >= 60:
-            risk_level = "Moderate"
-
-        else:
-            risk_level = "Low"
-
-    else:
-
-        if confidence >= 80:
-            risk_level = "Low"
-
-        elif confidence >= 60:
-            risk_level = "Moderate"
-
-        else:
-            risk_level = "High"
-
-
-    # --------------------------------------------------------
-    # CKD STAGE
-    # --------------------------------------------------------
-
-    stage = None
-    stage_number = None
-
-    if prediction == 1 and stage_model is not None:
-
-        try:
-
-            stage_prediction = stage_model.predict(
+        prediction = int(
+            clinical_model.predict(
                 input_scaled
             )[0]
+        )
 
-            stage_number = int(
-                round(float(stage_prediction))
-            )
+        probabilities = (
+            clinical_model.predict_proba(
+                input_scaled
+            )[0]
+        )
 
-            stage = f"Stage {stage_number}"
+        predicted_class_index = list(
+            clinical_model.classes_
+        ).index(
+            prediction
+        )
 
-        except Exception as e:
+        confidence = float(
+            probabilities[
+                predicted_class_index
+            ] * 100
+        )
 
-            print(
-                "Stage prediction failed:",
-                e
-            )
+        # ----------------------------------------------------
+        # CKD probability
+        #
+        # Class 0 = CKD
+        # ----------------------------------------------------
 
+        ckd_class_index = list(
+            clinical_model.classes_
+        ).index(0)
 
-    # --------------------------------------------------------
-    # RESPONSE
-    # --------------------------------------------------------
+        ckd_probability = float(
+            probabilities[
+                ckd_class_index
+            ]
+        )
 
-    return {
+        # ----------------------------------------------------
+        # Prediction label
+        # ----------------------------------------------------
 
-        "status": "Success",
+        if prediction == 0:
 
-        "prediction":
-            prediction_label,
+            prediction_label = "CKD Detected"
 
-        "confidence":
-            round(confidence, 2),
+        else:
 
-        "risk_level":
-            risk_level,
+            prediction_label = "Healthy"
 
-        "stage":
-            stage,
+        # ----------------------------------------------------
+        # Risk level
+        #
+        # Current project definition:
+        # risk is based on model confidence,
+        # not CKD stage severity.
+        # ----------------------------------------------------
 
-        "stage_number":
-            stage_number
-    }
+        if prediction == 0:
+
+            if confidence >= 80:
+
+                risk_level = "High"
+
+            elif confidence >= 60:
+
+                risk_level = "Moderate"
+
+            else:
+
+                risk_level = "Low"
+
+        else:
+
+            if confidence >= 80:
+
+                risk_level = "Low"
+
+            elif confidence >= 60:
+
+                risk_level = "Moderate"
+
+            else:
+
+                risk_level = "High"
+
+        # ----------------------------------------------------
+        # CKD STAGE
+        #
+        # Stage model was trained using the
+        # processed/scaled clinical dataset.
+        #
+        # Dataset labels are already:
+        # 1, 2, 3, 4, 5
+        #
+        # Therefore NO +1 is required.
+        # ----------------------------------------------------
+
+        stage = None
+        stage_number = None
+
+        if (
+            prediction == 0
+            and
+            stage_model is not None
+        ):
+
+            try:
+
+                stage_prediction = (
+                    stage_model.predict(
+                        input_scaled
+                    )[0]
+                )
+
+                stage_number = int(
+                    round(
+                        float(
+                            stage_prediction
+                        )
+                    )
+                )
+
+                stage = (
+                    f"Stage {stage_number}"
+                )
+
+            except Exception as e:
+
+                print(
+                    "Stage prediction failed:",
+                    e
+                )
+
+        # ----------------------------------------------------
+        # Response
+        # ----------------------------------------------------
+
+        return {
+
+            "status": "Success",
+
+            "prediction":
+                prediction_label,
+
+            "confidence":
+                round(
+                    confidence,
+                    2
+                ),
+
+            "risk_level":
+                risk_level,
+
+            "stage":
+                stage,
+
+            "stage_number":
+                stage_number
+        }
+
+    except Exception as e:
+
+        return {
+
+            "status": "Error",
+
+            "message":
+                str(e)
+        }
 
 
 # ============================================================
@@ -496,565 +576,632 @@ async def predict_image(
     file: UploadFile = File(...)
 ):
 
-    if not TORCH_AVAILABLE or unet_model is None:
-
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                "Ultrasound prediction is currently unavailable "
-                "because U-Net/PyTorch could not be loaded."
-            )
-        )
-
     if image_model is None:
 
-        raise HTTPException(
-            status_code=500,
-            detail="Image classification model is not loaded."
+        return {
+            "status": "Error",
+            "message": "Image model not loaded"
+        }
+
+    if unet_model is None:
+
+        return {
+            "status": "Error",
+            "message": "U-Net model not loaded"
+        }
+
+    try:
+
+        # ----------------------------------------------------
+        # Read image
+        # ----------------------------------------------------
+
+        contents = await file.read()
+
+        image = Image.open(
+            io.BytesIO(contents)
+        ).convert("RGB")
+
+        image = image.resize(
+            (256, 256)
         )
 
-
-    # --------------------------------------------------------
-    # Read image
-    # --------------------------------------------------------
-
-    contents = await file.read()
-
-    image_array = np.frombuffer(
-        contents,
-        np.uint8
-    )
-
-    image = cv2.imdecode(
-        image_array,
-        cv2.IMREAD_COLOR
-    )
-
-
-    if image is None:
-
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid ultrasound image."
+        image_array = (
+            np.array(image)
+            .astype(np.float32)
+            / 255.0
         )
 
+        # ----------------------------------------------------
+        # U-Net segmentation
+        # ----------------------------------------------------
 
-    # --------------------------------------------------------
-    # Resize
-    # --------------------------------------------------------
+        image_tensor = torch.tensor(
+            image_array
+        ).permute(
+            2,
+            0,
+            1
+        ).unsqueeze(0)
 
-    image = cv2.resize(
-        image,
-        (256, 256)
-    )
+        with torch.no_grad():
 
+            output = unet_model(
+                image_tensor
+            )
 
-    # --------------------------------------------------------
-    # RGB
-    # --------------------------------------------------------
+            mask_probability = (
+                torch.sigmoid(output)
+            )
 
-    image_rgb = cv2.cvtColor(
-        image,
-        cv2.COLOR_BGR2RGB
-    )
+            mask = (
+                mask_probability > 0.5
+            ).float()
 
-
-    # --------------------------------------------------------
-    # Normalize
-    # --------------------------------------------------------
-
-    image_float = (
-        image_rgb.astype(np.float32) / 255.0
-    )
-
-
-    # --------------------------------------------------------
-    # Tensor
-    # --------------------------------------------------------
-
-    tensor = torch.tensor(
-        image_float
-    ).permute(
-        2, 0, 1
-    ).unsqueeze(0)
-
-
-    # --------------------------------------------------------
-    # U-Net segmentation
-    # --------------------------------------------------------
-
-    with torch.no_grad():
-
-        output = unet_model(
-            tensor
+        mask_np = (
+            mask.squeeze().numpy()
         )
 
-        probability = torch.sigmoid(
-            output
+        # ----------------------------------------------------
+        # Extract kidney features
+        # ----------------------------------------------------
+
+        kidney_pixels = (
+            mask_np > 0
         )
 
-        mask = (
-            probability > 0.5
-        ).float()
-
-
-    # --------------------------------------------------------
-    # Mask
-    # --------------------------------------------------------
-
-    mask_np = (
-        mask.squeeze()
-        .cpu()
-        .numpy()
-        .astype(np.uint8)
-    )
-
-
-    # --------------------------------------------------------
-    # Extract image features
-    # --------------------------------------------------------
-
-    kidney_pixels = np.sum(mask_np)
-
-    kidney_area = float(kidney_pixels)
-
-    contours, _ = cv2.findContours(
-        mask_np,
-        cv2.RETR_EXTERNAL,
-        cv2.CHAIN_APPROX_SIMPLE
-    )
-
-
-    kidney_perimeter = 0.0
-    kidney_width = 0.0
-    kidney_height = 0.0
-
-    if contours:
-
-        largest_contour = max(
-            contours,
-            key=cv2.contourArea
+        kidney_area = float(
+            np.sum(kidney_pixels)
         )
 
-        kidney_perimeter = float(
-            cv2.arcLength(
-                largest_contour,
-                True
+        rows, cols = np.where(
+            kidney_pixels
+        )
+
+        if len(rows) > 0:
+
+            kidney_height = float(
+                rows.max()
+                - rows.min()
+                + 1
+            )
+
+            kidney_width = float(
+                cols.max()
+                - cols.min()
+                + 1
+            )
+
+        else:
+
+            kidney_height = 0.0
+            kidney_width = 0.0
+
+        # ----------------------------------------------------
+        # Aspect ratio
+        # ----------------------------------------------------
+
+        if kidney_height > 0:
+
+            aspect_ratio = (
+                kidney_width
+                /
+                kidney_height
+            )
+
+        else:
+
+            aspect_ratio = 0.0
+
+        # ----------------------------------------------------
+        # Intensity features
+        # ----------------------------------------------------
+
+        gray_image = np.array(
+            image.convert("L")
+        ).astype(
+            np.float32
+        )
+
+        if np.any(kidney_pixels):
+
+            kidney_intensity = (
+                gray_image[
+                    kidney_pixels
+                ]
+            )
+
+            mean_intensity = float(
+                np.mean(
+                    kidney_intensity
+                )
+            )
+
+            std_intensity = float(
+                np.std(
+                    kidney_intensity
+                )
+            )
+
+            min_intensity = float(
+                np.min(
+                    kidney_intensity
+                )
+            )
+
+            max_intensity = float(
+                np.max(
+                    kidney_intensity
+                )
+            )
+
+            median_intensity = float(
+                np.median(
+                    kidney_intensity
+                )
+            )
+
+        else:
+
+            mean_intensity = 0.0
+            std_intensity = 0.0
+            min_intensity = 0.0
+            max_intensity = 0.0
+            median_intensity = 0.0
+
+        # ----------------------------------------------------
+        # ROI features
+        # ----------------------------------------------------
+
+        roi_mean = mean_intensity
+        roi_std = std_intensity
+
+        # ----------------------------------------------------
+        # Perimeter approximation
+        # ----------------------------------------------------
+
+        mask_uint8 = (
+            kidney_pixels
+            .astype(
+                np.uint8
             )
         )
 
-        x, y, w, h = cv2.boundingRect(
-            largest_contour
+        horizontal_edges = np.abs(
+            np.diff(
+                mask_uint8.astype(
+                    np.int8
+                ),
+                axis=1
+            )
+        ).sum()
+
+        vertical_edges = np.abs(
+            np.diff(
+                mask_uint8.astype(
+                    np.int8
+                ),
+                axis=0
+            )
+        ).sum()
+
+        kidney_perimeter = float(
+            horizontal_edges
+            +
+            vertical_edges
         )
 
-        kidney_width = float(w)
-        kidney_height = float(h)
+        # ----------------------------------------------------
+        # Circularity
+        # ----------------------------------------------------
 
+        if kidney_perimeter > 0:
 
-    if kidney_perimeter > 0:
+            circularity = float(
+                (
+                    4
+                    *
+                    np.pi
+                    *
+                    kidney_area
+                )
+                /
+                (
+                    kidney_perimeter
+                    **
+                    2
+                )
+            )
 
-        circularity = (
-            4 * np.pi * kidney_area
-        ) / (
-            kidney_perimeter ** 2
-        )
+        else:
 
-    else:
+            circularity = 0.0
 
-        circularity = 0.0
+        # ----------------------------------------------------
+        # Image feature dataframe
+        #
+        # Must match the image model's
+        # training feature order.
+        # ----------------------------------------------------
 
+        image_features = pd.DataFrame(
 
-    if kidney_height > 0:
-
-        aspect_ratio = (
-            kidney_width /
-            kidney_height
-        )
-
-    else:
-
-        aspect_ratio = 0.0
-
-
-    # --------------------------------------------------------
-    # Intensity features
-    # --------------------------------------------------------
-
-    gray = cv2.cvtColor(
-        image_rgb,
-        cv2.COLOR_RGB2GRAY
-    )
-
-
-    mean_intensity = float(
-        np.mean(gray)
-    )
-
-    std_intensity = float(
-        np.std(gray)
-    )
-
-    min_intensity = float(
-        np.min(gray)
-    )
-
-    max_intensity = float(
-        np.max(gray)
-    )
-
-    median_intensity = float(
-        np.median(gray)
-    )
-
-
-    # --------------------------------------------------------
-    # ROI intensity
-    # --------------------------------------------------------
-
-    roi_pixels = gray[
-        mask_np == 1
-    ]
-
-
-    if len(roi_pixels) > 0:
-
-        roi_mean = float(
-            np.mean(roi_pixels)
-        )
-
-        roi_std = float(
-            np.std(roi_pixels)
-        )
-
-    else:
-
-        roi_mean = 0.0
-        roi_std = 0.0
-
-
-    # --------------------------------------------------------
-    # Feature vector
-    # --------------------------------------------------------
-
-    image_features = np.array([
-
-        kidney_area,
-        kidney_perimeter,
-        kidney_width,
-        kidney_height,
-        aspect_ratio,
-        circularity,
-        mean_intensity,
-        std_intensity,
-        min_intensity,
-        max_intensity,
-        median_intensity,
-        roi_mean,
-        roi_std
-
-    ]).reshape(1, -1)
-
-
-    # --------------------------------------------------------
-    # Image prediction
-    # --------------------------------------------------------
-
-    image_prediction = int(
-        image_model.predict(
-            image_features
-        )[0]
-    )
-
-
-    image_probabilities = (
-        image_model.predict_proba(
-            image_features
-        )[0]
-    )
-
-
-    image_probability = float(
-        image_probabilities[1] * 100
-    )
-
-
-    if image_prediction == 1:
-
-        image_label = "Pathological"
-
-    else:
-
-        image_label = "Healthy"
-
-
-    return {
-
-        "status": "Success",
-
-        "prediction":
-            image_label,
-
-        "image_probability":
-            round(
-                image_probability,
-                2
-            ),
-
-        "kidney_area":
-            round(
+            [[
                 kidney_area,
-                2
-            ),
-
-        "kidney_perimeter":
-            round(
                 kidney_perimeter,
-                2
-            ),
+                kidney_width,
+                kidney_height,
+                aspect_ratio,
+                circularity,
+                mean_intensity,
+                std_intensity,
+                min_intensity,
+                max_intensity,
+                median_intensity,
+                roi_mean,
+                roi_std
+            ]],
 
-        "segmentation_available":
-            True
-    }
+            columns=[
+
+                "kidney_area",
+                "kidney_perimeter",
+                "kidney_width",
+                "kidney_height",
+                "aspect_ratio",
+                "circularity",
+                "mean_intensity",
+                "std_intensity",
+                "min_intensity",
+                "max_intensity",
+                "median_intensity",
+                "roi_mean",
+                "roi_std"
+            ]
+        )
+
+        # ----------------------------------------------------
+        # Image model prediction
+        # ----------------------------------------------------
+
+        image_prediction = int(
+            image_model.predict(
+                image_features
+            )[0]
+        )
+
+        image_probabilities = (
+            image_model.predict_proba(
+                image_features
+            )[0]
+        )
+
+        # Class 1 = Pathological
+
+        pathological_class_index = list(
+            image_model.classes_
+        ).index(1)
+
+        image_probability = float(
+            image_probabilities[
+                pathological_class_index
+            ]
+            *
+            100
+        )
+
+        # ----------------------------------------------------
+        # Image label
+        # ----------------------------------------------------
+
+        if image_prediction == 1:
+
+            image_label = "Pathological"
+
+        else:
+
+            image_label = "Healthy"
+
+        # ----------------------------------------------------
+        # Response
+        # ----------------------------------------------------
+
+        return {
+
+            "status": "Success",
+
+            "prediction":
+                image_label,
+
+            "image_probability":
+                round(
+                    image_probability,
+                    2
+                )
+        }
+
+    except Exception as e:
+
+        return {
+
+            "status": "Error",
+
+            "message":
+                str(e)
+        }
 
 
 # ============================================================
-# FUSION PREDICTION
+# LATE FUSION
 # ============================================================
 
 @app.post("/fusion-predict")
 async def fusion_predict(
+
     patient: str = Form(...),
+
     file: UploadFile = File(...)
 ):
 
-    if not TORCH_AVAILABLE or unet_model is None:
-
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                "Fusion prediction is currently unavailable "
-                "because U-Net/PyTorch could not be loaded."
-            )
-        )
-
-
-    # --------------------------------------------------------
-    # Parse patient JSON
-    # --------------------------------------------------------
-
     try:
 
-        patient_data = json.loads(patient)
+        # ----------------------------------------------------
+        # Parse patient JSON
+        # ----------------------------------------------------
+
+        patient_dict = json.loads(
+            patient
+        )
 
         patient_model = PatientData(
-            **patient_data
+            **patient_dict
         )
+
+        # ----------------------------------------------------
+        # Clinical prediction
+        # ----------------------------------------------------
+
+        clinical_result = predict(
+            patient_model
+        )
+
+        if (
+            clinical_result.get(
+                "status"
+            )
+            !=
+            "Success"
+        ):
+
+            return clinical_result
+
+        # ----------------------------------------------------
+        # Image prediction
+        # ----------------------------------------------------
+
+        image_result = await predict_image(
+            file
+        )
+
+        if (
+            image_result.get(
+                "status"
+            )
+            !=
+            "Success"
+        ):
+
+            return image_result
+
+        # ----------------------------------------------------
+        # Clinical probability
+        #
+        # Convert clinical result into
+        # probability of CKD.
+        # ----------------------------------------------------
+
+        if (
+            clinical_result[
+                "prediction"
+            ]
+            ==
+            "CKD Detected"
+        ):
+
+            clinical_probability = (
+                clinical_result[
+                    "confidence"
+                ]
+                /
+                100
+            )
+
+        else:
+
+            clinical_probability = (
+                1
+                -
+                (
+                    clinical_result[
+                        "confidence"
+                    ]
+                    /
+                    100
+                )
+            )
+
+        # ----------------------------------------------------
+        # Image probability
+        # ----------------------------------------------------
+
+        image_probability = (
+            image_result[
+                "image_probability"
+            ]
+            /
+            100
+        )
+
+        # ----------------------------------------------------
+        # Prototype late fusion
+        #
+        # Clinical = 60%
+        # Image = 40%
+        # ----------------------------------------------------
+
+        clinical_weight = 0.60
+        image_weight = 0.40
+
+        final_probability = (
+
+            clinical_weight
+            *
+            clinical_probability
+
+            +
+
+            image_weight
+            *
+            image_probability
+        )
+
+        # ----------------------------------------------------
+        # Final prediction
+        # ----------------------------------------------------
+
+        if final_probability >= 0.50:
+
+            final_prediction = (
+                "CKD Detected"
+            )
+
+        else:
+
+            final_prediction = (
+                "Healthy"
+            )
+
+        # ----------------------------------------------------
+        # Final confidence
+        # ----------------------------------------------------
+
+        confidence = (
+            final_probability
+            *
+            100
+        )
+
+        # ----------------------------------------------------
+        # Final risk
+        # ----------------------------------------------------
+
+        if final_probability >= 0.80:
+
+            risk_level = "High"
+
+        elif final_probability >= 0.50:
+
+            risk_level = "Moderate"
+
+        else:
+
+            risk_level = "Low"
+
+        # ----------------------------------------------------
+        # Stage
+        #
+        # If final prediction is CKD,
+        # use the clinical stage already calculated
+        # by the clinical prediction.
+        #
+        # No +1 is required because the stage model
+        # already predicts labels 1-5.
+        # ----------------------------------------------------
+
+        stage = None
+        stage_number = None
+
+        if (
+            final_prediction
+            ==
+            "CKD Detected"
+        ):
+
+            stage = clinical_result.get(
+                "stage"
+            )
+
+            stage_number = clinical_result.get(
+                "stage_number"
+            )
+
+        # ----------------------------------------------------
+        # Final response
+        # ----------------------------------------------------
+
+        return {
+
+            "status":
+                "Success",
+
+            "clinical_prediction":
+                clinical_result[
+                    "prediction"
+                ],
+
+            "clinical_probability":
+                round(
+                    clinical_probability
+                    *
+                    100,
+                    2
+                ),
+
+            "image_prediction":
+                image_result[
+                    "prediction"
+                ],
+
+            "image_probability":
+                round(
+                    image_probability
+                    *
+                    100,
+                    2
+                ),
+
+            "final_probability":
+                round(
+                    final_probability
+                    *
+                    100,
+                    2
+                ),
+
+            "confidence":
+                round(
+                    confidence,
+                    2
+                ),
+
+            "risk_level":
+                risk_level,
+
+            "stage":
+                stage,
+
+            "stage_number":
+                stage_number
+        }
 
     except Exception as e:
 
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid patient data: {str(e)}"
-        )
+        return {
 
+            "status":
+                "Error",
 
-    # --------------------------------------------------------
-    # Clinical prediction
-    # --------------------------------------------------------
-
-    clinical_result = predict(
-        patient_model
-    )
-
-
-    # --------------------------------------------------------
-    # Image prediction
-    # --------------------------------------------------------
-
-    image_result = await predict_image(
-        file
-    )
-
-
-    clinical_probability = (
-        clinical_result["confidence"] / 100
-        if clinical_result["prediction"]
-        == "CKD Detected"
-        else
-        1 -
-        clinical_result["confidence"] / 100
-    )
-
-
-    image_probability = (
-        image_result["image_probability"] / 100
-    )
-
-
-    # --------------------------------------------------------
-    # Prototype late fusion
-    # --------------------------------------------------------
-
-    clinical_weight = 0.60
-    image_weight = 0.40
-
-
-    final_probability = (
-        clinical_weight *
-        clinical_probability
-
-        +
-
-        image_weight *
-        image_probability
-    )
-
-
-    if final_probability >= 0.50:
-
-        final_prediction = "CKD Detected"
-
-    else:
-
-        final_prediction = "Healthy"
-
-
-    # --------------------------------------------------------
-    # Stage
-    # --------------------------------------------------------
-
-    stage = clinical_result["stage"]
-    stage_number = clinical_result["stage_number"]
-
-
-    # --------------------------------------------------------
-    # Final response
-    # --------------------------------------------------------
-
-    return {
-
-        "status": "Success",
-
-        "prediction":
-            final_prediction,
-
-        "clinical_prediction":
-            clinical_result["prediction"],
-
-        "clinical_probability":
-            round(
-                clinical_probability * 100,
-                2
-            ),
-
-        "image_prediction":
-            image_result["prediction"],
-
-        "image_probability":
-            round(
-                image_probability * 100,
-                2
-            ),
-
-        "final_probability":
-            round(
-                final_probability * 100,
-                2
-            ),
-
-        "confidence":
-            round(
-                final_probability * 100,
-                2
-            ),
-
-        "risk_level":
-            clinical_result["risk_level"],
-
-        "stage":
-            stage,
-
-        "stage_number":
-            stage_number
-    }
-
-
-# ============================================================
-# HISTORY
-# ============================================================
-
-prediction_history = []
-
-
-@app.get("/history")
-def get_history():
-
-    return {
-
-        "status": "Success",
-
-        "count":
-            len(prediction_history),
-
-        "history":
-            prediction_history
-    }
-
-
-# ============================================================
-# STARTUP
-# ============================================================
-
-@app.on_event("startup")
-def startup_event():
-
-    print()
-    print("=" * 60)
-    print("NephroPredictor API")
-    print("=" * 60)
-
-    print(
-        "Clinical Model:",
-        "Loaded"
-        if clinical_model is not None
-        else "Unavailable"
-    )
-
-    print(
-        "Scaler:",
-        "Loaded"
-        if scaler is not None
-        else "Unavailable"
-    )
-
-    print(
-        "Stage Model:",
-        "Loaded"
-        if stage_model is not None
-        else "Unavailable"
-    )
-
-    print(
-        "Image Model:",
-        "Loaded"
-        if image_model is not None
-        else "Unavailable"
-    )
-
-    print(
-        "PyTorch:",
-        "Available"
-        if TORCH_AVAILABLE
-        else "Unavailable"
-    )
-
-    print(
-        "U-Net:",
-        "Loaded"
-        if unet_model is not None
-        else "Unavailable"
-    )
-
-    print("=" * 60)
-    print()
+            "message":
+                str(e)
+        }
 

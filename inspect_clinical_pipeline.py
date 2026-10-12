@@ -1,28 +1,40 @@
-import pandas as pd
+import joblib
 
 BASE_DIR = r"C:\Users\HP\OneDrive\Desktop\NephroPredictorr"
 
-DATA_PATH = BASE_DIR + r"\dataset\clinical\processed_ckd_dataset.csv"
+model = joblib.load(
+    BASE_DIR + r"\models\best_ckd_model.pkl"
+)
 
-df = pd.read_csv(DATA_PATH)
+scaler = joblib.load(
+    BASE_DIR + r"\models\scaler.pkl"
+)
 
-print("========== SHAPE ==========")
-print(df.shape)
+encoders = joblib.load(
+    BASE_DIR + r"\models\label_encoders.pkl"
+)
 
-print("\n========== COLUMNS ==========")
-for i, col in enumerate(df.columns):
-    print(i, ":", col)
+print("========== MODEL ==========")
+print(model)
 
-print("\n========== DATA TYPES ==========")
-print(df.dtypes)
+print("\n========== SCALER ==========")
+print(type(scaler))
 
-print("\n========== FIRST 5 ROWS ==========")
-print(df.head())
+if hasattr(scaler, "feature_names_in_"):
+    print("Scaler features:")
+    print(scaler.feature_names_in_)
 
-print("\n========== MISSING VALUES ==========")
-print(df.isnull().sum())
+if hasattr(scaler, "n_features_in_"):
+    print("Scaler number of features:")
+    print(scaler.n_features_in_)
 
-print("\n========== TARGET COLUMNS ==========")
-for col in df.columns:
-    if "ckd" in col.lower() or "diagn" in col.lower() or "target" in col.lower():
-        print(col, df[col].unique()[:20])
+print("\n========== LABEL ENCODERS ==========")
+print(type(encoders))
+
+if isinstance(encoders, dict):
+    print("Encoder columns:")
+    for column, encoder in encoders.items():
+        print("\n", column)
+        print("Classes:", encoder.classes_)
+else:
+    print(encoders)

@@ -29,3 +29,17 @@ segmentation/masks/
 
 .DS_Store
 Thumbs.db
+
+models_backup/*.pkl
+models_backup/*.pth
+
+# Backup model files
+models_backup/
+
+# Generated segmentation test results
+segmentation/results/checkpoint_failure_comparison/
+segmentation/results/failure_visualizations/
+segmentation/results/threshold_inspection/
+
+# Temporary file listing
+changed_files.txt

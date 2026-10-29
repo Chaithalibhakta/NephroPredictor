@@ -3,11 +3,9 @@ import cv2
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
+
 from torch.utils.data import Dataset, DataLoader
-
 from unet_model import UNet
-
 
 # ============================================================
 # PATHS
@@ -15,514 +13,202 @@ from unet_model import UNet
 
 BASE_DIR = r"C:\Users\HP\OneDrive\Desktop\NephroPredictorr"
 
-SEGMENTATION_DIR = os.path.join(
-    BASE_DIR,
-    "segmentation"
-)
+IMAGE_DIR = os.path.join(BASE_DIR, "segmentation", "images")
+MASK_DIR = os.path.join(BASE_DIR, "segmentation", "masks")
+TEST_CSV = os.path.join(BASE_DIR, "dataset", "kidney_images", "test.csv")
+MODEL_DIR = os.path.join(BASE_DIR, "segmentation", "models")
 
-IMAGE_DIR = os.path.join(
-    SEGMENTATION_DIR,
-    "images"
-)
+MODEL_PATHS = [
+    os.path.join(MODEL_DIR, "best_unet.pth"),
+    os.path.join(MODEL_DIR, "best_unet_test.pth"),
+]
 
-MASK_DIR = os.path.join(
-    SEGMENTATION_DIR,
-    "masks"
-)
-
-CSV_DIR = os.path.join(
-    BASE_DIR,
-    "dataset",
-    "kidney_images"
-)
-
-TEST_CSV = os.path.join(
-    CSV_DIR,
-    "test.csv"
-)
-
-MODEL_DIR = os.path.join(
-    SEGMENTATION_DIR,
-    "models"
-)
-
-MODEL_PATH = os.path.join(
-    MODEL_DIR,
-    "best_unet.pth"
-)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # ============================================================
-# SETTINGS
-# ============================================================
-
-BATCH_SIZE = 1
-NUM_WORKERS = 0
-
-
-# ============================================================
-# DEVICE
-# ============================================================
-
-device = torch.device(
-    "cuda" if torch.cuda.is_available() else "cpu"
-)
-
-print("=" * 60)
-print("FINAL U-NET TEST EVALUATION")
-print("=" * 60)
-
-print("\nDevice:", device)
-
-
-# ============================================================
-# DATASET CLASS
+# DATASET
 # ============================================================
 
 class KidneyTestDataset(Dataset):
 
-    def __init__(
-        self,
-        dataframe,
-        image_dir,
-        mask_dir
-    ):
-
-        self.dataframe = dataframe.reset_index(
-            drop=True
-        )
-
-        self.image_dir = image_dir
-        self.mask_dir = mask_dir
+    def __init__(self, dataframe):
+        self.dataframe = dataframe.reset_index(drop=True)
 
     def __len__(self):
-
         return len(self.dataframe)
 
     def __getitem__(self, index):
-
         row = self.dataframe.iloc[index]
 
-        # ----------------------------------------------------
-        # Get image filename from CSV
-        # ----------------------------------------------------
+        image_name = os.path.basename(str(row["image_path"]))
+        image_id = os.path.splitext(image_name)[0]
 
-        image_name = str(
-            row["image_path"]
-        )
+        image_path = os.path.join(IMAGE_DIR, image_id + ".jpg")
+        mask_path = os.path.join(MASK_DIR, image_id + ".png")
 
-        # Remove directory information
-        image_name = os.path.basename(
-            image_name
-        )
-
-        # Remove extension
-        image_id = os.path.splitext(
-            image_name
-        )[0]
-
-        # ----------------------------------------------------
-        # Construct actual paths
-        # ----------------------------------------------------
-
-        image_path = os.path.join(
-            self.image_dir,
-            image_id + ".jpg"
-        )
-
-        mask_path = os.path.join(
-            self.mask_dir,
-            image_id + ".png"
-        )
-
-        # ----------------------------------------------------
-        # Read image
-        # ----------------------------------------------------
-
-        image = cv2.imread(
-            image_path,
-            cv2.IMREAD_COLOR
-        )
+        image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+        mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
 
         if image is None:
-
-            raise RuntimeError(
-                f"Could not read image: {image_path}"
-            )
-
-        # BGR -> RGB
-        image = cv2.cvtColor(
-            image,
-            cv2.COLOR_BGR2RGB
-        )
-
-        # Normalize
-        image = image.astype(
-            np.float32
-        ) / 255.0
-
-        # HWC -> CHW
-        image = np.transpose(
-            image,
-            (2, 0, 1)
-        )
-
-        # ----------------------------------------------------
-        # Read mask
-        # ----------------------------------------------------
-
-        mask = cv2.imread(
-            mask_path,
-            cv2.IMREAD_GRAYSCALE
-        )
+            raise RuntimeError(f"Cannot read image: {image_path}")
 
         if mask is None:
+            raise RuntimeError(f"Cannot read mask: {mask_path}")
 
-            raise RuntimeError(
-                f"Could not read mask: {mask_path}"
-            )
+        # Same preprocessing as the existing evaluation
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = image.astype(np.float32) / 255.0
+        image = np.transpose(image, (2, 0, 1))
 
-        # Normalize mask
-        mask = mask.astype(
-            np.float32
-        ) / 255.0
+        mask = (mask > 127).astype(np.float32)
+        mask = np.expand_dims(mask, axis=0)
 
-        # Binary mask
-        mask = (
-            mask > 0.5
-        ).astype(
-            np.float32
+        return (
+            torch.from_numpy(image).float(),
+            torch.from_numpy(mask).float()
         )
 
-        # Add channel
-        mask = np.expand_dims(
-            mask,
-            axis=0
+
+# ============================================================
+# EVALUATION
+# ============================================================
+
+def evaluate_model(model_path, loader):
+
+    model = UNet().to(device)
+
+    try:
+        state_dict = torch.load(
+            model_path,
+            map_location=device,
+            weights_only=True
         )
+        model.load_state_dict(state_dict)
+    except Exception:
+        del model
+        raise
 
-        # ----------------------------------------------------
-        # Convert to tensors
-        # ----------------------------------------------------
+    model.eval()
 
-        image = torch.tensor(
-            image,
-            dtype=torch.float32
-        )
+    dice_scores = []
+    iou_scores = []
+    empty_predictions = 0
 
-        mask = torch.tensor(
-            mask,
-            dtype=torch.float32
-        )
+    with torch.no_grad():
 
-        return image, mask
+        for batch_index, (images, masks) in enumerate(loader):
 
+            images = images.to(device)
+            masks = masks.to(device)
 
-# ============================================================
-# DICE SCORE
-# ============================================================
+            logits = model(images)
+            predictions = (torch.sigmoid(logits) > 0.5).float()
 
-def dice_score(
-    prediction,
-    target
-):
+            # Calculate metrics separately for each image
+            for i in range(images.shape[0]):
 
-    prediction = torch.sigmoid(
-        prediction
-    )
+                pred = predictions[i]
+                target = masks[i]
 
-    prediction = (
-        prediction > 0.5
-    ).float()
+                intersection = (pred * target).sum().item()
+                pred_area = pred.sum().item()
+                target_area = target.sum().item()
+                union = pred_area + target_area - intersection
 
-    smooth = 1e-6
+                # If both masks are empty, Dice and IoU are 1.
+                if pred_area + target_area == 0:
+                    dice = 1.0
+                else:
+                    dice = (2.0 * intersection) / (
+                        pred_area + target_area
+                    )
 
-    intersection = (
-        prediction * target
-    ).sum()
+                if union == 0:
+                    iou = 1.0
+                else:
+                    iou = intersection / union
 
-    dice = (
-        2 * intersection + smooth
-    ) / (
-        prediction.sum()
-        + target.sum()
-        + smooth
-    )
+                dice_scores.append(dice)
+                iou_scores.append(iou)
 
-    return dice.item()
+                if pred_area == 0:
+                    empty_predictions += 1
 
+            if (batch_index + 1) % 100 == 0:
+                print(
+                    f"  Evaluated {batch_index + 1}/{len(loader)} batches"
+                )
 
-# ============================================================
-# IOU SCORE
-# ============================================================
+    result = {
+        "images": len(dice_scores),
+        "mean_dice": float(np.mean(dice_scores)),
+        "mean_iou": float(np.mean(iou_scores)),
+        "empty_predictions": empty_predictions,
+    }
 
-def iou_score(
-    prediction,
-    target
-):
-
-    prediction = torch.sigmoid(
-        prediction
-    )
-
-    prediction = (
-        prediction > 0.5
-    ).float()
-
-    smooth = 1e-6
-
-    intersection = (
-        prediction * target
-    ).sum()
-
-    union = (
-        prediction
-        + target
-        - prediction * target
-    ).sum()
-
-    iou = (
-        intersection + smooth
-    ) / (
-        union + smooth
-    )
-
-    return iou.item()
+    del model
+    return result
 
 
 # ============================================================
-# LOSS FUNCTIONS
+# MAIN
 # ============================================================
 
-bce_loss = nn.BCEWithLogitsLoss()
+print("=" * 65)
+print("COMPARING BOTH U-NET MODELS ON THE SAME TEST SET")
+print("Device:", device)
+print("=" * 65)
 
+test_df = pd.read_csv(TEST_CSV)
+print("Test CSV rows:", len(test_df))
 
-def dice_loss(
-    prediction,
-    target
-):
+dataset = KidneyTestDataset(test_df)
 
-    prediction = torch.sigmoid(
-        prediction
-    )
-
-    smooth = 1e-6
-
-    intersection = (
-        prediction * target
-    ).sum()
-
-    dice = (
-        2 * intersection + smooth
-    ) / (
-        prediction.sum()
-        + target.sum()
-        + smooth
-    )
-
-    return 1 - dice
-
-
-def combined_loss(
-    prediction,
-    target
-):
-
-    bce = bce_loss(
-        prediction,
-        target
-    )
-
-    dice = dice_loss(
-        prediction,
-        target
-    )
-
-    return bce + dice
-
-
-# ============================================================
-# LOAD TEST CSV
-# ============================================================
-
-print("\nLoading test dataset...")
-
-test_df = pd.read_csv(
-    TEST_CSV
-)
-
-print(
-    "Test samples:",
-    len(test_df)
-)
-
-
-# ============================================================
-# CREATE TEST DATASET
-# ============================================================
-
-test_dataset = KidneyTestDataset(
-    test_df,
-    IMAGE_DIR,
-    MASK_DIR
-)
-
-
-# ============================================================
-# CREATE TEST DATALOADER
-# ============================================================
-
-test_loader = DataLoader(
-    test_dataset,
-    batch_size=BATCH_SIZE,
+loader = DataLoader(
+    dataset,
+    batch_size=1,
     shuffle=False,
-    num_workers=NUM_WORKERS
+    num_workers=0
 )
 
+results = []
 
-# ============================================================
-# CREATE U-NET
-# ============================================================
+for model_path in MODEL_PATHS:
 
-print("\nCreating U-Net...")
+    print("\nModel:", os.path.basename(model_path))
 
-model = UNet().to(device)
+    if not os.path.exists(model_path):
+        print("ERROR: Model file not found.")
+        continue
 
-print(
-    "U-Net created successfully."
-)
+    result = evaluate_model(model_path, loader)
+    result["model"] = os.path.basename(model_path)
+    results.append(result)
 
+    print("Images evaluated:", result["images"])
+    print(f"Mean Dice: {result['mean_dice']:.4f}")
+    print(f"Mean Dice (%): {result['mean_dice'] * 100:.2f}%")
+    print(f"Mean IoU: {result['mean_iou']:.4f}")
+    print(f"Mean IoU (%): {result['mean_iou'] * 100:.2f}%")
+    print("Empty predictions:", result["empty_predictions"])
 
-# ============================================================
-# LOAD BEST MODEL
-# ============================================================
+print("\n" + "=" * 65)
+print("FINAL COMPARISON")
+print("=" * 65)
 
-print("\nLoading best model...")
-
-model.load_state_dict(
-    torch.load(
-        MODEL_PATH,
-        map_location=device
+for result in results:
+    print(
+        f"{result['model']}: "
+        f"Dice={result['mean_dice']:.4f}, "
+        f"IoU={result['mean_iou']:.4f}, "
+        f"Empty predictions={result['empty_predictions']}"
     )
-)
 
-model.eval()
+if len(results) == 2:
+    print("\nComparison based on mean Dice:")
+    better = max(results, key=lambda r: r["mean_dice"])
+    print("Higher mean Dice:", better["model"])
 
-print(
-    "✓ Best U-Net model loaded successfully."
-)
-
-
-# ============================================================
-# TEST EVALUATION
-# ============================================================
-
-print("\n")
-print("=" * 60)
-print("STARTING TEST EVALUATION")
-print("=" * 60)
-
-
-total_test_loss = 0.0
-total_dice = 0.0
-total_iou = 0.0
-
-
-with torch.no_grad():
-
-    for batch_index, (
-        images,
-        masks
-    ) in enumerate(test_loader):
-
-        images = images.to(device)
-        masks = masks.to(device)
-
-        # Forward pass
-        outputs = model(
-            images
-        )
-
-        # Loss
-        loss = combined_loss(
-            outputs,
-            masks
-        )
-
-        # Metrics
-        dice = dice_score(
-            outputs,
-            masks
-        )
-
-        iou = iou_score(
-            outputs,
-            masks
-        )
-
-        total_test_loss += loss.item()
-        total_dice += dice
-        total_iou += iou
-
-        # Progress
-        if (
-            (batch_index + 1) % 100 == 0
-        ):
-
-            print(
-                f"Test Batch "
-                f"{batch_index + 1}/"
-                f"{len(test_loader)}"
-            )
-
-
-# ============================================================
-# FINAL RESULTS
-# ============================================================
-
-test_loss = (
-    total_test_loss
-    / len(test_loader)
-)
-
-test_dice = (
-    total_dice
-    / len(test_loader)
-)
-
-test_iou = (
-    total_iou
-    / len(test_loader)
-)
-
-
-# ============================================================
-# PRINT RESULTS
-# ============================================================
-
-print("\n")
-print("=" * 60)
-print("FINAL U-NET TEST RESULTS")
-print("=" * 60)
-
-print(
-    f"Test Loss : {test_loss:.4f}"
-)
-
-print(
-    f"Test Dice : {test_dice:.4f}"
-)
-
-print(
-    f"Test IoU  : {test_iou:.4f}"
-)
-
-print("=" * 60)
-
-print(
-    "\nModel:",
-    MODEL_PATH
-)
-
-print(
-    "\n✓ TEST EVALUATION COMPLETE"
-)
+print("\nNo model weights were modified.")
+print("=" * 65)

@@ -253,7 +253,8 @@ const demoCases = {
 };
 
 function App() {
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
+const [assessmentMode, setAssessmentMode] = useState("");
 
   const [patient, setPatient] = useState({
     patientId: "",
@@ -1098,112 +1099,221 @@ e.target.value = "";
         return "Not available";
     }
   };
+const generateResults = async () => {
+setLoading(true);
+setError("");
 
-  const generateResults = async () => {
-    if (!validatePageTwo()) return;
+try {
+let result;
 
-    setLoading(true);
-    setError("");
 
-    try {
-      const clinicalPayload = Object.fromEntries(
-        Object.entries(clinicalData).map(([key, value]) => [
-          key,
-          Number(value),
-        ])
-      );
+// MODE 1: CLINICAL-ONLY ASSESSMENT
+if (assessmentMode === "clinical") {
+  if (!validatePageOne()) return;
 
-      const clinicalResponse = await fetch(`${API_URL}/predict`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(clinicalPayload),
-      });
-
-      if (!clinicalResponse.ok) {
-        throw new Error("Clinical prediction failed.");
-      }
-
-      const clinicalDataResponse = await clinicalResponse.json();
-
-      setClinicalResult(clinicalDataResponse);
-
-     const formData = new FormData();
-
-formData.append(
-  "patient",
-  JSON.stringify(clinicalPayload)
-);
-
-formData.append(
-  "file",
-  ultrasound
-);
-
-      const fusionResponse = await fetch(
-        `${API_URL}/fusion-predict`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!fusionResponse.ok) {
-        throw new Error("Fusion prediction failed.");
-      }
-
-      const fusionData = await fusionResponse.json();
-
-      const finalPrediction =
-        fusionData.prediction ||
-        fusionData.final_prediction ||
-        fusionData.clinical_prediction ||
-        "Not Available";
-
-      const finalStage =
-  fusionData.stage ||
-  fusionData.stage_name ||
-  (
-    fusionData.stage_number
-      ? `Stage ${fusionData.stage_number}`
-      : null
+  const clinicalPayload = Object.fromEntries(
+    Object.entries(clinicalData).map(([key, value]) => [
+      key,
+      Number(value),
+    ])
   );
 
-      const finalSeverity =
-        finalPrediction === "CKD Detected"
-          ? getStageSeverity(finalStage)
-          : "Normal";
+  const response = await fetch(`${API_URL}/predict`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(clinicalPayload),
+  });
 
-      const probability = Number(
-        fusionData.final_probability ??
-          fusionData.confidence ??
-          0
-      );
+  if (!response.ok) {
+    throw new Error("Clinical prediction failed.");
+  }
 
-      setFinalResult({
-        ...fusionData,
-        prediction: finalPrediction,
-        stage: finalStage,
-        severity: finalSeverity,
-        confidence: probability,
-      });
+  const data = await response.json();
 
-      setPage(3);
-    } catch (err) {
-      console.error(err);
+  setClinicalResult(data);
 
-      setError(
-        err.message ||
-          "Something went wrong while generating the assessment."
-      );
-    } finally {
-      setLoading(false);
-    }
+  const prediction =
+    data.prediction ||
+    data.clinical_prediction ||
+    data.final_prediction ||
+    "Not Available";
+
+  const stage =
+    data.stage ||
+    data.stage_name ||
+    (data.stage_number ? `Stage ${data.stage_number}` : null);
+
+  const confidence = Number(
+    data.confidence ??
+      data.final_probability ??
+      data.probability ??
+      0
+  );
+
+  result = {
+    ...data,
+    prediction,
+    stage,
+    severity:
+      prediction === "CKD Detected"
+        ? getStageSeverity(stage)
+        : "Normal",
+    confidence,
+    assessmentMode: "clinical",
   };
+}
+
+// MODE 2: ULTRASOUND-ONLY ASSESSMENT
+else if (assessmentMode === "ultrasound") {
+  if (!ultrasound) {
+    throw new Error("Please upload a kidney ultrasound image.");
+  }
+
+  const formData = new FormData();
+  formData.append("file", ultrasound);
+
+  const response = await fetch(`${API_URL}/predict-image`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("Ultrasound prediction failed.");
+  }
+
+  const data = await response.json();
+
+  const prediction =
+    data.prediction ||
+    data.image_prediction ||
+    data.final_prediction ||
+    "Not Available";
+
+  const stage =
+    data.stage ||
+    data.stage_name ||
+    (data.stage_number ? `Stage ${data.stage_number}` : null);
+
+  const confidence = Number(
+    data.confidence ??
+      data.final_probability ??
+      data.probability ??
+      0
+  );
+
+  result = {
+...data,
+prediction,
+stage,
+severity:
+prediction === "CKD Detected"
+? getStageSeverity(stage)
+: "-",
+confidence,
+assessmentMode: "ultrasound",
+};
+
+}
+
+// MODE 3: COMBINED CLINICAL + ULTRASOUND ASSESSMENT
+else {
+  if (!validatePageTwo()) return;
+
+  if (!ultrasound) {
+    throw new Error("Please upload a kidney ultrasound image.");
+  }
+
+  const clinicalPayload = Object.fromEntries(
+    Object.entries(clinicalData).map(([key, value]) => [
+      key,
+      Number(value),
+    ])
+  );
+
+  const clinicalResponse = await fetch(`${API_URL}/predict`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(clinicalPayload),
+  });
+
+  if (!clinicalResponse.ok) {
+    throw new Error("Clinical prediction failed.");
+  }
+
+  const clinicalDataResponse = await clinicalResponse.json();
+  setClinicalResult(clinicalDataResponse);
+
+  const formData = new FormData();
+  formData.append("patient", JSON.stringify(clinicalPayload));
+  formData.append("file", ultrasound);
+
+  const fusionResponse = await fetch(`${API_URL}/fusion-predict`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!fusionResponse.ok) {
+    throw new Error("Combined prediction failed.");
+  }
+
+  const data = await fusionResponse.json();
+
+  const prediction =
+    data.prediction ||
+    data.final_prediction ||
+    data.clinical_prediction ||
+    "Not Available";
+
+  const stage =
+    data.stage ||
+    data.stage_name ||
+    (data.stage_number ? `Stage ${data.stage_number}` : null);
+
+  const confidence = Number(
+    data.final_probability ??
+      data.confidence ??
+      0
+  );
+
+  result = {
+    ...data,
+    prediction,
+    stage,
+    severity:
+      prediction === "CKD Detected"
+        ? getStageSeverity(stage)
+        : "Normal",
+    confidence,
+    assessmentMode: "combined",
+  };
+}
+
+setFinalResult(result);
+setPage(3);
+
+
+} catch (err) {
+console.error(err);
+
+
+setError(
+  err.message ||
+    "Something went wrong while generating the assessment."
+);
+
+
+} finally {
+setLoading(false);
+}
+};
+
 
   const startNewAssessment = () => {
-    setPage(1);
+    setPage(0);
 
     setPatient({
       patientId: "",
@@ -1290,8 +1400,444 @@ setReportLoading(false);
 
   const generatePDFReport = () => {
     if (!finalResult) return;
+const isClinicalOnly = assessmentMode === "clinical";
+const isUltrasoundOnly = assessmentMode === "ultrasound";
+const isCombined = assessmentMode === "combined";
+    // =====================================================
+// SEPARATE REPORTS: CLINICAL-ONLY AND ULTRASOUND-ONLY
+// COMBINED REPORT BELOW REMAINS UNCHANGED
+// =====================================================
 
-    const doc = new jsPDF();
+if (isClinicalOnly || isUltrasoundOnly) {
+  const singleDoc = new jsPDF();
+
+  const reportWidth = singleDoc.internal.pageSize.getWidth();
+  const reportHeight = singleDoc.internal.pageSize.getHeight();
+  const reportMargin = 18;
+
+  let reportY = 48;
+
+  const isClinical = isClinicalOnly;
+
+  const reportTitle = isClinical
+    ? "CLINICAL CKD ASSESSMENT REPORT"
+    : "ULTRASOUND CKD ASSESSMENT REPORT";
+
+  const prediction =
+    finalResult.prediction || "Not Available";
+
+  const stage =
+    prediction === "CKD Detected"
+      ? formatStage(finalResult.stage)
+      : "Not Applicable";
+const severity =
+assessmentMode === "ultrasound"
+? "-"
+: (
+finalResult.severity ||
+(prediction === "CKD Detected"
+? getStageSeverity(finalResult.stage)
+: "Normal")
+);
+
+
+  const rawConfidence =
+    finalResult.confidence ??
+    finalResult.final_probability ??
+    finalResult.probability;
+
+  const confidence =
+    rawConfidence !== undefined &&
+    rawConfidence !== null &&
+    rawConfidence !== ""
+      ? Number(rawConfidence)
+      : null;
+
+  const assessmentDate = new Date().toLocaleString(
+    "en-IN",
+    {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }
+  );
+
+  // HEADER
+  singleDoc.setFillColor(15, 75, 110);
+
+  singleDoc.rect(
+    0,
+    0,
+    reportWidth,
+    34,
+    "F"
+  );
+
+  singleDoc.setTextColor(255, 255, 255);
+  singleDoc.setFont("helvetica", "bold");
+  singleDoc.setFontSize(20);
+
+  singleDoc.text(
+    "NEPHROPREDICTOR",
+    reportMargin,
+    14
+  );
+
+  singleDoc.setFont("helvetica", "normal");
+  singleDoc.setFontSize(9);
+
+  singleDoc.text(
+    "CKD Early Detection & Clinical Decision Support",
+    reportMargin,
+    23
+  );
+
+  singleDoc.setFontSize(8);
+
+  singleDoc.text(
+    reportTitle,
+    reportWidth - reportMargin,
+    18,
+    { align: "right" }
+  );
+
+  // SECTION TITLE
+  const addSection = (title) => {
+    if (reportY > reportHeight - 35) {
+      singleDoc.addPage();
+      reportY = 25;
+    }
+
+    singleDoc.setFont("helvetica", "bold");
+    singleDoc.setFontSize(13);
+    singleDoc.setTextColor(20, 65, 100);
+
+    singleDoc.text(
+      title,
+      reportMargin,
+      reportY
+    );
+
+    singleDoc.setDrawColor(210, 220, 228);
+
+    singleDoc.line(
+      reportMargin,
+      reportY + 3,
+      reportWidth - reportMargin,
+      reportY + 3
+    );
+
+    reportY += 13;
+  };
+
+  // TEXT / ROW HELPER
+  const addReportRow = (label, value) => {
+    if (reportY > reportHeight - 28) {
+      singleDoc.addPage();
+      reportY = 25;
+    }
+
+    singleDoc.setFontSize(9);
+    singleDoc.setFont("helvetica", "bold");
+    singleDoc.setTextColor(70, 80, 90);
+
+    singleDoc.text(
+      label,
+      reportMargin,
+      reportY
+    );
+
+    singleDoc.setFont("helvetica", "normal");
+    singleDoc.setTextColor(30, 35, 40);
+
+    const displayValue =
+      value === undefined ||
+      value === null ||
+      value === ""
+        ? "Not available"
+        : String(value);
+
+    const valueLines = singleDoc.splitTextToSize(
+      displayValue,
+      reportWidth - reportMargin * 2 - 58
+    );
+
+    singleDoc.text(
+      valueLines,
+      reportMargin + 58,
+      reportY
+    );
+
+    reportY += Math.max(
+      8,
+      valueLines.length * 5
+    );
+  };
+
+  // 1. PATIENT INFORMATION
+  addSection("1. Patient Information");
+
+  addReportRow(
+    "Patient ID",
+    patient?.patientId || "Not provided"
+  );
+
+  addReportRow(
+    "Patient Name",
+    patient?.patientName || "Not provided"
+  );
+
+  addReportRow(
+    "Age",
+    patient?.age
+      ? `${patient.age} years`
+      : "Not provided"
+  );
+
+  addReportRow(
+    "Gender",
+    patient?.gender || "Not provided"
+  );
+
+  addReportRow(
+    "Assessment Date",
+    assessmentDate
+  );
+
+  reportY += 5;
+
+  // 2. ASSESSMENT RESULT
+  addSection(
+    isClinical
+      ? "2. Clinical Model Assessment"
+      : "2. Ultrasound Model Assessment"
+  );
+
+  addReportRow(
+    "Prediction",
+    prediction
+  );
+
+  addReportRow(
+    "CKD Stage",
+    stage
+  );
+
+  addReportRow("Severity", severity);
+
+  addReportRow(
+    "Model Confidence",
+    confidence !== null && Number.isFinite(confidence)
+      ? `${confidence.toFixed(1)}%`
+      : "Not provided by model"
+  );
+
+  reportY += 5;
+
+  // 3. MODE-SPECIFIC DETAILS
+  if (isClinical) {
+    addSection("3. Clinical Parameters");
+
+    const clinicalLabels = {
+      serum_creatinine: "Serum Creatinine",
+      gfr: "GFR",
+      bun: "BUN",
+      serum_calcium: "Serum Calcium",
+      oxalate_levels: "Oxalate Levels",
+      urine_ph: "Urine pH",
+      blood_pressure: "Blood Pressure",
+      ana: "ANA",
+      c3_c4: "C3/C4",
+      hematuria: "Hematuria",
+      smoking: "Smoking",
+      alcohol: "Alcohol",
+      painkiller_usage: "Painkiller Usage",
+      family_history: "Family History",
+      physical_activity: "Physical Activity",
+      diet: "Diet",
+      water_intake: "Water Intake",
+      weight_changes: "Weight Changes",
+      stress_level: "Stress Level",
+      months: "Duration",
+    };
+
+    Object.entries(clinicalLabels).forEach(
+      ([key, label]) => {
+        addReportRow(
+          label,
+          clinicalData[key]
+        );
+      }
+    );
+
+  } else {
+    addSection("3. Ultrasound Image Details");
+
+    addReportRow(
+      "Uploaded Image",
+      ultrasound?.name || "Image filename unavailable"
+    );
+
+    addReportRow(
+      "Assessment Type",
+      "Ultrasound-only assessment"
+    );
+
+    addReportRow(
+      "Analysis Pipeline",
+      "U-Net kidney segmentation followed by image feature extraction and classification"
+    );
+
+    // Include the image probability only if the backend
+    // actually returned it.
+    if (finalResult.image_probability != null) {
+      addReportRow(
+        "Image Model Probability",
+        `${Number(finalResult.image_probability).toFixed(1)}%`
+      );
+    }
+  }
+
+  reportY += 5;
+
+  // 4. MODE-SPECIFIC SUMMARY
+  addSection(
+    isClinical
+      ? "4. Clinical Analysis Summary"
+      : "4. Ultrasound Analysis Summary"
+  );
+
+  const summary = isClinical
+    ? `The clinical assessment returned "${prediction}". The result was generated from the clinical parameters supplied to the Random Forest-based prediction pipeline. This report describes the clinical-only assessment and does not combine an ultrasound prediction.`
+    : `The ultrasound assessment returned "${prediction}". The result was generated using the ultrasound image-analysis pipeline. This report describes the ultrasound-only assessment and does not combine a clinical-data prediction.`;
+
+  singleDoc.setFont("helvetica", "normal");
+  singleDoc.setFontSize(9);
+  singleDoc.setTextColor(50, 60, 70);
+
+  const summaryLines = singleDoc.splitTextToSize(
+    summary,
+    reportWidth - reportMargin * 2
+  );
+
+  if (
+    reportY + summaryLines.length * 5 >
+    reportHeight - 35
+  ) {
+    singleDoc.addPage();
+    reportY = 25;
+  }
+
+  singleDoc.text(
+    summaryLines,
+    reportMargin,
+    reportY,
+    { lineHeightFactor: 1.5 }
+  );
+
+  reportY += summaryLines.length * 5 + 12;
+
+  // 5. DISCLAIMER
+  if (reportY > reportHeight - 55) {
+    singleDoc.addPage();
+    reportY = 25;
+  }
+
+  singleDoc.setFillColor(248, 250, 252);
+
+  singleDoc.roundedRect(
+    reportMargin,
+    reportY,
+    reportWidth - reportMargin * 2,
+    32,
+    4,
+    4,
+    "F"
+  );
+
+  singleDoc.setFont("helvetica", "bold");
+  singleDoc.setFontSize(9);
+  singleDoc.setTextColor(50, 65, 80);
+
+  singleDoc.text(
+    "Important Notice",
+    reportMargin + 7,
+    reportY + 9
+  );
+
+  singleDoc.setFont("helvetica", "normal");
+  singleDoc.setFontSize(8);
+  singleDoc.setTextColor(80, 90, 100);
+
+  const disclaimer =
+    "This report is generated by an AI-assisted research prototype for clinical decision support. It is not a substitute for professional medical diagnosis, interpretation, or treatment.";
+
+  const disclaimerLines = singleDoc.splitTextToSize(
+    disclaimer,
+    reportWidth - reportMargin * 2 - 14
+  );
+
+  singleDoc.text(
+    disclaimerLines,
+    reportMargin + 7,
+    reportY + 17,
+    { lineHeightFactor: 1.4 }
+  );
+
+  // FOOTER ON EVERY PAGE
+  const totalPages =
+    singleDoc.internal.getNumberOfPages();
+
+  for (let i = 1; i <= totalPages; i++) {
+    singleDoc.setPage(i);
+
+    singleDoc.setDrawColor(220, 225, 230);
+
+    singleDoc.line(
+      reportMargin,
+      reportHeight - 16,
+      reportWidth - reportMargin,
+      reportHeight - 16
+    );
+
+    singleDoc.setFont("helvetica", "normal");
+    singleDoc.setFontSize(8);
+    singleDoc.setTextColor(120, 130, 140);
+
+    singleDoc.text(
+      "NephroPredictor • AI-Assisted CKD Decision-Support Prototype",
+      reportMargin,
+      reportHeight - 9
+    );
+
+    singleDoc.text(
+      `Page ${i}`,
+      reportWidth - reportMargin,
+      reportHeight - 9,
+      { align: "right" }
+    );
+  }
+
+  // MODE-SPECIFIC PDF FILENAME
+  const safePatientId = String(
+    patient?.patientId || "patient"
+  ).replace(/[^a-z0-9_-]/gi, "_");
+
+  const reportType = isClinical
+    ? "Clinical_Assessment"
+    : "Ultrasound_Assessment";
+
+  singleDoc.save(
+    `NephroPredictor_${reportType}_${safePatientId}.pdf`
+  );
+
+  // IMPORTANT: Do not execute the Combined report code.
+  return;
+}
+
+// EXISTING COMBINED REPORT STARTS BELOW.
+// LEAVE ITS CODE UNCHANGED.
+const doc = new jsPDF();
+    
 
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -1430,43 +1976,47 @@ setReportLoading(false);
 
     let y = 48;
 
+   
     // Patient information
-    y = sectionTitle(
-      "1. Patient Information",
-      y
-    );
+y = sectionTitle(
+"1. Patient Information",
+y
+);
 
-    y = addRow(
-      "Patient ID",
-      patient.patientId,
-      y
-    );
+y = addRow(
+"Patient ID",
+patient?.patientId || "Not provided",
+y
+);
 
-    y = addRow(
-      "Patient Name",
-      patient.patientName,
-      y
-    );
+y = addRow(
+"Patient Name",
+patient?.patientName || "Not provided",
+y
+);
 
-    y = addRow(
-      "Age",
-      `${patient.age} years`,
-      y
-    );
+y = addRow(
+"Age",
+patient?.age != null && patient.age !== ""
+? `${patient.age} years`
+: "Not provided",
+y
+);
 
-    y = addRow(
-      "Gender",
-      patient.gender,
-      y
-    );
+y = addRow(
+"Gender",
+patient?.gender || "Not provided",
+y
+);
 
-    y = addRow(
-      "Assessment Date",
-      assessmentDate,
-      y
-    );
+y = addRow(
+"Assessment Date",
+assessmentDate,
+y
+);
 
-    y += 5;
+y += 5;
+
 
     // Final assessment
     y = sectionTitle(
@@ -1929,18 +2479,148 @@ setReportLoading(false);
             </div>
           </div>
 
-          <div className="system-status">
-            <span className="status-dot" />
-            SYSTEM READY
-          </div>
+          <div className="header-actions">
+  {page !== 0 && (
+    <button
+      type="button"
+      className="back-home-button"
+      onClick={() => {
+        setError("");
+        setPage(0);
+      }}
+    >
+      ← Back to Home
+    </button>
+  )}
+
+  <div className="system-status">
+    <span className="status-dot" />
+    SYSTEM READY
+  </div>
+</div>
+
 
         </div>
       </header>
 
       <main className="main-container">
+        {/* HOME PAGE */}
+{page === 0 && (
+  <section className="home-page">
+    <div className="hero-section">
+      <div>
+        <div className="eyebrow">
+          AI-ASSISTED CKD SCREENING
+        </div>
+
+        <h2>
+          Welcome to
+          <br />
+          NephroPredictor
+        </h2>
+
+        <p>
+          Choose an assessment method to explore
+          clinical data, kidney ultrasound analysis,
+          or both together.
+        </p>
+      </div>
+
+      <div className="hero-icon">🩺</div>
+    </div>
+
+    <div className="assessment-mode-grid">
+      <button
+        type="button"
+        className="assessment-mode-card"
+        onClick={() => {
+          setAssessmentMode("clinical");
+          setError("");
+          setPage(1);
+        }}
+      >
+        <span className="assessment-mode-icon">🧪</span>
+        <h3>Clinical Data</h3>
+        <p>
+          Enter clinical parameters or upload a
+          clinical report to obtain a clinical-only
+          prediction.
+        </p>
+        <span className="mode-action">
+          Start Clinical Assessment →
+        </span>
+      </button>
+
+      <button
+        type="button"
+        className="assessment-mode-card"
+        onClick={() => {
+          setAssessmentMode("ultrasound");
+          setError("");
+          setPage(2);
+        }}
+      >
+        <span className="assessment-mode-icon">🖥️</span>
+        <h3>Ultrasound Images</h3>
+        <p>
+          Upload a kidney ultrasound image for
+          image-only prediction.
+        </p>
+        <span className="mode-action">
+          Start Image Assessment →
+        </span>
+      </button>
+
+      <button
+        type="button"
+        className="assessment-mode-card"
+        onClick={() => {
+          setAssessmentMode("combined");
+          setError("");
+          setPage(1);
+        }}
+      >
+        <span className="assessment-mode-icon">🔬</span>
+        <h3>Clinical + Ultrasound</h3>
+        <p>
+          Enter clinical parameters, upload an
+          ultrasound, and run the combined
+          assessment.
+        </p>
+        <span className="mode-action">
+          Start Combined Assessment →
+        </span>
+      </button>
+    </div>
+
+    <button
+      type="button"
+      className="performance-metrics-bar"
+      onClick={() => {
+        setError("");
+        setPage(4);
+      }}
+    >
+      <span className="metrics-bar-icon">📊</span>
+
+      <span className="metrics-bar-content">
+        <strong>Performance Metrics</strong>
+        <small>
+          Explore accuracy, precision, recall,
+          F1-score, ROC-AUC and model comparisons.
+        </small>
+      </span>
+
+      <span className="metrics-bar-action">
+        View Dashboard →
+      </span>
+    </button>
+  </section>
+)}
 
         {/* WORKFLOW */}
-        <section className="workflow-bar">
+{page !== 0 && page !== 4 && (
+  <section className="workflow-bar">
 
           <div
             className={`workflow-step ${
@@ -1983,6 +2663,8 @@ setReportLoading(false);
           </div>
 
         </section>
+        )}
+
 
         {error && (
           <div className="error-banner">
@@ -2071,26 +2753,9 @@ setReportLoading(false);
               </div>
 
             </section>
-            {/* PERFORMANCE METRICS NAVIGATION BAR */}
-        <button
-          type="button"
-          className="performance-metrics-bar"
-          onClick={() => setPage(4)}
-        >
-          <span className="metrics-bar-icon">📊</span>
-
-          <span className="metrics-bar-content">
-            <strong>Performance Metrics</strong>
-            <small>
-              Explore model accuracy, precision, recall, F1-score,
-              ROC-AUC and model comparison
-            </small>
-          </span>
-
-          <span className="metrics-bar-action">
-            View Dashboard →
-          </span>
-        </button>
+            
+        
+           
 
 
             <section className="form-card">
@@ -2267,17 +2932,25 @@ setReportLoading(false);
                 </div>
               </div>
 
-              <button
-                className="primary-button"
-                onClick={() => {
-                  if (validatePageOne()) {
-                    setPage(2);
-                  }
-                }}
-              >
-                Continue to Ultrasound
-                <span>→</span>
-              </button>
+<button
+  className="primary-button"
+  onClick={() => {
+    if (validatePageOne()) {
+      if (assessmentMode === "clinical") {
+        generateResults();
+      } else {
+        setPage(2);
+      }
+    }
+  }}
+>
+  {assessmentMode === "clinical"
+    ? "Generate Clinical Results"
+    : "Continue to Ultrasound"}
+  <span>→</span>
+</button>
+
+
 
             </div>
           </>
@@ -2552,7 +3225,8 @@ setReportLoading(false);
 
             </section>
 
-            <section className="patient-summary-card">
+            {assessmentMode !== "ultrasound" && (
+  <section className="patient-summary-card">
 
               <div>
                 <span>Patient ID</span>
@@ -2582,7 +3256,10 @@ setReportLoading(false);
                 </strong>
               </div>
 
-            </section>
+              </section>
+)}
+
+
 
             <section className="dashboard-result-grid">
 
@@ -2613,17 +3290,32 @@ setReportLoading(false);
                 )}
               />
 
-              <ResultCard
-                title="Confidence"
-                value={`${probability.toFixed(1)}%`}
-                className="purple"
-              />
+              {assessmentMode === "combined" ? (
+  <ResultCard
+    title="Confidence"
+    value={`${probability.toFixed(1)}%`}
+    className="purple"
+  />
+) : assessmentMode === "clinical" ? (
+  <ResultCard
+    title="Clinical Model"
+    value="Random Forest"
+    className="purple"
+  />
+) : (
+  <ResultCard
+    title="Image Analysis"
+    value="U-Net + Classifier"
+    className="purple"
+  />
+)}
 
             </section>
 
             <section className="result-analysis-grid">
 
-              <div className="result-card-large">
+              {assessmentMode === "combined" && (
+  <div className="result-card-large">
 
                 <div className="card-heading">
 
@@ -2740,7 +3432,125 @@ setReportLoading(false);
 
                 </div>
 
-              </div>
+                </div>
+                
+)}
+{/* CLINICAL-ONLY VISUALIZATION */}
+{assessmentMode === "clinical" && (
+  <div className="result-card-large visual-analysis-card">
+
+    <div className="card-heading">
+      <div>
+        <span className="section-kicker">
+          CLINICAL INTELLIGENCE
+        </span>
+
+        <h3>Clinical Analysis Pipeline</h3>
+      </div>
+
+      <span className="fusion-badge">
+        ML ANALYSIS
+      </span>
+    </div>
+
+    <p className="visual-card-description">
+      Clinical parameters are processed by the
+      machine learning pipeline to generate a
+      CKD assessment.
+    </p>
+
+    <div className="analysis-flow">
+
+      <div className="analysis-flow-item">
+        <div className="analysis-flow-icon">🩺</div>
+        <strong>Clinical Data</strong>
+        <small>Patient parameters</small>
+      </div>
+
+      <div className="analysis-flow-arrow">→</div>
+
+      <div className="analysis-flow-item">
+        <div className="analysis-flow-icon">⚙️</div>
+        <strong>Processing</strong>
+        <small>Feature preparation</small>
+      </div>
+
+      <div className="analysis-flow-arrow">→</div>
+
+      <div className="analysis-flow-item">
+        <div className="analysis-flow-icon">🧠</div>
+        <strong>Random Forest</strong>
+        <small>ML classification</small>
+      </div>
+
+    </div>
+
+    <div className="visual-card-footer">
+      <span className="status-indicator"></span>
+      Clinical assessment mode
+    </div>
+
+  </div>
+)}
+
+
+{/* ULTRASOUND-ONLY VISUALIZATION */}
+{assessmentMode === "ultrasound" && (
+  <div className="result-card-large visual-analysis-card">
+
+    <div className="card-heading">
+      <div>
+        <span className="section-kicker">
+          MEDICAL IMAGE INTELLIGENCE
+        </span>
+
+        <h3>Ultrasound Analysis Pipeline</h3>
+      </div>
+
+      <span className="fusion-badge">
+        IMAGE ANALYSIS
+      </span>
+    </div>
+
+    <p className="visual-card-description">
+      The ultrasound analysis pipeline processes
+      the uploaded kidney image for AI-based
+      classification.
+    </p>
+
+    <div className="analysis-flow">
+
+      <div className="analysis-flow-item">
+        <div className="analysis-flow-icon">🖼️</div>
+        <strong>Ultrasound</strong>
+        <small>Input image</small>
+      </div>
+
+      <div className="analysis-flow-arrow">→</div>
+
+      <div className="analysis-flow-item">
+        <div className="analysis-flow-icon">🔬</div>
+        <strong>U-Net</strong>
+        <small>Kidney segmentation</small>
+      </div>
+
+      <div className="analysis-flow-arrow">→</div>
+
+      <div className="analysis-flow-item">
+        <div className="analysis-flow-icon">🧠</div>
+        <strong>Classifier</strong>
+        <small>Image prediction</small>
+      </div>
+
+    </div>
+
+    <div className="visual-card-footer">
+      <span className="status-indicator"></span>
+      Ultrasound assessment mode
+    </div>
+
+  </div>
+)}
 
               <div className="result-card-large stage-card">
 
@@ -3163,7 +3973,7 @@ setReportLoading(false);
               <button
                 type="button"
                 className="performance-return-button"
-                onClick={() => setPage(1)}
+                onClick={() => setPage(0)}
               >
                 Return to Dashboard
               </button>
